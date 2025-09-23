@@ -23,6 +23,7 @@ public class RaceCalendarHarvestNo(string yearOption, string monthOption)
     private string MonthOption { get; } = monthOption;
     private List<string> RaceCourseOptions { get; } = [];
 
+    // collected data to be parsed
     public List<CalendarScrapeData> DataCollected { get; } = [];
     
     /// <summary>
