@@ -1,34 +1,41 @@
 ﻿using Spider.NO;
+using Spider.NO.Data;
 
-string[] idlist_1 = ["N-07-0686", "DK-0D2107", "578001020185073"];
-short index = 2;
+string[] idList1 = ["2202", "5404", "30051177"];
+string[] idList2 = ["42598", "8111", "2209"];
+string[] idList3 = ["119", "29265", "30015553"];
+
+short index = 0;
     
 var master = new MasterBotNo();
-var horseHarvester = new HorseHarvestNo(idlist_1[index]);
 
-await master.RunBrowser(horseHarvester.Run);
+var driverHarvesterSingle = new DriverHarvestNo(idList1[index]);
 
-foreach (var item in horseHarvester.RaceDataCollected[0..3])
+await master.RunBrowser(driverHarvesterSingle.Run);
+
+foreach (var item in driverHarvesterSingle.RaceDataCollected)
 {
-    Console.WriteLine($"\nRacecourse: {item.RaceCourse}");
-    Console.WriteLine($"Date: {item.Date}");
-    Console.WriteLine($"Racenumber: {item.RaceNumber}");
-    Console.WriteLine($"StartNumber: {item.StartNumber}");
-    Console.WriteLine($"DriverSourceId: {item.DriverSourceId}");
-    Console.WriteLine($"HorseSourceId: {item.HorseSourceId}");
-    Console.WriteLine($"TrackNumber: {item.TrackNumber}");
-    Console.WriteLine($"Distance: {item.Distance}");
-    Console.WriteLine($"ForeShoe: {item.ForeShoe}");
-    Console.WriteLine($"HindShoe: {item.HindShoe}");
-    Console.WriteLine($"Cart: {item.Cart}");
-    Console.WriteLine($"Place: {item.Place}");
-    Console.WriteLine($"KmTime: {item.KmTime}");
-    Console.WriteLine($"RRemark: {item.RRemark}");
-    Console.WriteLine($"GRemark: {item.GRemark}");
-    Console.WriteLine($"FromDirectSource: {item.FromDirectSource}\n");
-    
-    
-    
-    
-    
+    PrintDriverData(item);
+}
+
+
+void PrintDriverData(ResultScrapeData data)
+{
+    Console.WriteLine($"\nRaceCourse: {data.RaceCourse}");
+    Console.WriteLine($"Date: {data.Date}");
+    Console.WriteLine($"RaceNumber of birth: {data.RaceNumber}");
+    Console.WriteLine($"StartNumber: {data.StartNumber}");
+    Console.WriteLine($"DriverSource: {data.DriverSourceId}");
+    Console.WriteLine($"HorseSource: {data.HorseSourceId}");
+    Console.WriteLine($"TrackNumber: {data.TrackNumber}");
+    Console.WriteLine($"Distance: {data.Distance}");
+    Console.WriteLine($"ForeShoe: {data.ForeShoe}");
+    Console.WriteLine($"HindShoe: {data.HindShoe}");
+    Console.WriteLine($"Cart: {data.Cart}");
+    Console.WriteLine($"Place: {data.Place}");
+    Console.WriteLine($"Time: {data.Time}");
+    Console.WriteLine($"KmTime: {data.KmTime}");
+    Console.WriteLine($"RRemark: {data.RRemark}");
+    Console.WriteLine($"GRemark: {data.GRemark}");
+    Console.WriteLine($"FromDirectSource: {data.FromDirectSource}");
 }
