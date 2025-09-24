@@ -152,42 +152,42 @@ public class HorseHarvestNo
     /// </summary>
     private async Task<ResultScrapeData> _parseRow(ILocator row, string horseSourceId)
     {
-          var cells = await row.Locator("td").AllAsync();
+        var cells = await row.Locator("td").AllAsync();
 
-          var raceCourse = await cells[1].TextContentAsync();
-          var date = await cells[2].TextContentAsync();
-          var raceNumber = await cells[3].TextContentAsync();
-          var startNumber = await cells[6].TextContentAsync();
-          var driverSourceId = await cells[0].Locator("a").GetAttributeAsync("href");
-          var trackAndDistance = await cells[4].TextContentAsync();
-          var foreShoe = await cells[15].Locator("//span[1]").GetAttributeAsync("class");
-          var hindShoe = await cells[15].Locator("//span[2]").GetAttributeAsync("class");
-          var cart = await cells[16].TextContentAsync();
-          var place = await cells[9].TextContentAsync(); 
-          var kmTime = await cells[8].TextContentAsync();
-          var rRemark = await cells[10].TextContentAsync();
-          var gRemark = await cells[11].TextContentAsync();
+        var raceCourse = await cells[1].TextContentAsync();
+        var date = await cells[2].TextContentAsync();
+        var raceNumber = await cells[3].TextContentAsync();
+        var startNumber = await cells[6].TextContentAsync();
+        var driverSourceId = await cells[0].Locator("a").GetAttributeAsync("href");
+        var trackAndDistance = await cells[4].TextContentAsync();
+        var foreShoe = await cells[15].Locator("//span[1]").GetAttributeAsync("class");
+        var hindShoe = await cells[15].Locator("//span[2]").GetAttributeAsync("class");
+        var cart = await cells[16].TextContentAsync();
+        var place = await cells[9].TextContentAsync(); 
+        var kmTime = await cells[8].TextContentAsync();
+        var rRemark = await cells[10].TextContentAsync();
+        var gRemark = await cells[11].TextContentAsync();
 
-          var item = new ResultScrapeData
-          {
-              RaceCourse = raceCourse!,
-              Date = date!,
-              RaceNumber = raceNumber!,
-              StartNumber = startNumber!,
-              DriverSourceId = _extractUrlEnd(driverSourceId!),
-              HorseSourceId = horseSourceId,
-              TrackNumber = trackAndDistance!.Split("/")[0],
-              Distance = trackAndDistance!.Split("/")[1],
-              ForeShoe = foreShoe!,
-              HindShoe = hindShoe!,
-              Cart = cart!,
-              Place = place!,
-              KmTime = kmTime!,
-              RRemark = rRemark!,
-              GRemark = gRemark!,
-              FromDirectSource = false,
-          };
-          return item;
+        var item = new ResultScrapeData
+        {
+            RaceCourse = raceCourse!,
+            Date = date!,
+            RaceNumber = raceNumber!,
+            StartNumber = startNumber!,
+            DriverSourceId = _extractUrlEnd(driverSourceId!),
+            HorseSourceId = horseSourceId,
+            TrackNumber = trackAndDistance!.Split("/")[0],
+            Distance = trackAndDistance!.Split("/")[1],
+            ForeShoe = foreShoe!,
+            HindShoe = hindShoe!,
+            Cart = cart!,
+            Place = place!,
+            KmTime = kmTime!,
+            RRemark = rRemark!,
+            GRemark = gRemark!,
+            FromDirectSource = false,
+        };
+        return item;
     }
     
     /// <summary>

@@ -157,7 +157,7 @@ public class DriverHarvestNo
         var foreShoe = await cells[18].Locator("//span[1]").GetAttributeAsync("class");
         var hindShoe = await cells[18].Locator("//span[2]").GetAttributeAsync("class");
         var cart = await cells[19].TextContentAsync();
-        var place = await cells[0].TextContentAsync();
+        var place = await cells[9].TextContentAsync();
         var kmTime = await cells[11].TextContentAsync();
         var rRemark =  await cells[12].TextContentAsync();
         var gRemark = await cells[13].TextContentAsync();
