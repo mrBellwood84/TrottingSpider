@@ -18,14 +18,23 @@ string[] horseSourceIds = ["578001020220130", "578001020220158", "57800102022039
 var config = new AppConfigurations();
 var logger = new AppLogger();
 
+var competitionDbService = new CompetitionDbService(config.ConnectionString!);
 var driverDbService = new DriverDbService(config.ConnectionString!);
-var horseDbService = new HorseDbService(config.ConnectionString!);
 var licenceDbService = new DriverLicenseBaseDbService(config.ConnectionString!);
+var horseDbService = new HorseDbService(config.ConnectionString!);
+var raceDbService = new RaceDbService(config.ConnectionString!);
+var raceCourseDbService = new RaceCourseDbService(config.ConnectionString!);
+var raceStartNumberDbService = new RaceStartNumberDbService(config.ConnectionString!);
+var raceResultDbService = new RaceResultDbService(config.ConnectionString!);
 
-var licenseIds = await licenceDbService.GetLicenceDict();
+var competitionIds = await competitionDbService.GetIdDictionary();
 var driverIds = await driverDbService.GetIdDictionary();
+var licenseIds = await licenceDbService.GetIdDictionary();
 var horseIds = await horseDbService.GetIdDictionary();
-
+var raceIds = await raceDbService.GetIdDictionary();
+var raceCourseIds = await raceCourseDbService.GetIdDictionary();
+var raceStartNumberIds = await raceStartNumberDbService.GetIdDictionary();
+var raceResultIds = await raceResultDbService.GetIdDictionary();
 
 var bot = new BaseRobot();
 

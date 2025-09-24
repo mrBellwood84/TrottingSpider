@@ -9,5 +9,6 @@ public class AppConfigurations
         .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
         .Build();
     
-    public string? ConnectionString => _configuration.GetValue<string>("Database:ConnectionString:DefaultConnection");
+    //public string? ConnectionString => _configuration.GetValue<string>("ConnectionString:DefaultConnection");
+    public string? ConnectionString => _configuration.GetConnectionString("DefaultConnection");
 }
