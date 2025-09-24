@@ -3,10 +3,14 @@ using Spider.NO.Data;
 
 namespace Spider.NO;
 
+/// <summary>
+/// Harvests data from horse page. Require horse source id to run
+/// Does allow a range of drivers source ids
+/// </summary>
 public class HorseHarvestNo
 {
     // values for min and max option in table select box
-    private const short MaxYear = 2025;
+    private const short MaxYear = 2010;
     private const short MinYear = 2010;
     
     //base url for horse data

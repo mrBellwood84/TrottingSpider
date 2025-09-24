@@ -3,6 +3,9 @@ using Spider.NO.Data;
 
 namespace Spider.NO;
 
+/// <summary>
+/// Harvest links for startlists and for the year and month provided!
+/// </summary>
 public class RaceCalendarHarvestNo(string yearOption, string monthOption)
 {
     private const string CalendarUrl = "https://www.travsport.no/sportsbasen/lopskalender/";

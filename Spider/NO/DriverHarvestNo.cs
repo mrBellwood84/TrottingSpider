@@ -3,11 +3,15 @@ using Spider.NO.Data;
 
 namespace Spider.NO;
 
+/// <summary>
+/// Harvest Data from drivers page. Require source id of driver to run.
+/// Does also accept a range of driver source ids.
+/// </summary>
 public class DriverHarvestNo
 {
     // values for min and max option in table select box
-    private const short MaxYear = 2024;
-    private const short MinYear = 2022;
+    private const short MaxYear = 2010;
+    private const short MinYear = 2010;
     
     // driver data xpaths
     private const string YearOfBirthXpath = "//article//h1/small";

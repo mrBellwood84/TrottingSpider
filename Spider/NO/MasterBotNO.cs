@@ -12,43 +12,6 @@ public class MasterBotNo: BaseRobot
     
     
     /// <summary>
-    /// Run all years and months, collect data
-    /// </summary>
-    public async Task RunFull()
-    {
-        // itterate the _allCalendarDateMonthOptions
-            // havest each calendar
-            // parse calendar items
-            // get all startlist data
-            // harvest all drivers
-                //parse them
-            // harvest all horses
-                // parse them
-                    // itterate until buffer is clear
-            // parse results
-            
-    }
-    
-    /// <summary>
-    /// Run all months in provided year, collect data
-    /// </summary>
-    /// <param name="year"></param>
-    public async Task RunYear(string year)
-    {
-        // run just single year
-    }
-
-    /// <summary>
-    /// Run one month in provided year only.
-    /// </summary>
-    /// <param name="year"></param>
-    /// <param name="month"></param>
-    public async Task RunMonth(string year, string month)
-    {
-        // run single month in provided year
-    }
-    
-    /// <summary>
     /// Create enumerable calendar date and month options
     /// </summary>
     /// <returns></returns>

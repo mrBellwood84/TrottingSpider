@@ -1,29 +1,24 @@
 ﻿using Spider.NO;
 using Spider.NO.Data;
 
-string[] idList1 = ["2202", "5404", "30051177"];
-string[] idList2 = ["42598", "8111", "2209"];
-string[] idList3 = ["119", "29265", "30015553"];
-
-short index = 0;
+string url_1 = "https://www.travsport.no/travbaner/biri-travbane/results/2025-09-19";
     
 var master = new MasterBotNo();
 
-var driverHarvesterSingle = new DriverHarvestNo(idList1[index]);
+var harvester = new ResultsHarvestNo(url_1);
 
-await master.RunBrowser(driverHarvesterSingle.Run);
+await master.RunBrowser(harvester.Run);
 
-foreach (var item in driverHarvesterSingle.RaceDataCollected)
+foreach (var data in harvester.DataCollected[0..1])
 {
-    PrintDriverData(item);
+    PrintDriverData(data);
 }
-
 
 void PrintDriverData(ResultScrapeData data)
 {
     Console.WriteLine($"\nRaceCourse: {data.RaceCourse}");
     Console.WriteLine($"Date: {data.Date}");
-    Console.WriteLine($"RaceNumber of birth: {data.RaceNumber}");
+    Console.WriteLine($"RaceNumber: {data.RaceNumber}");
     Console.WriteLine($"StartNumber: {data.StartNumber}");
     Console.WriteLine($"DriverSource: {data.DriverSourceId}");
     Console.WriteLine($"HorseSource: {data.HorseSourceId}");

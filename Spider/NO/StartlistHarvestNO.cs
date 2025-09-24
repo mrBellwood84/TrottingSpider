@@ -3,6 +3,10 @@ using Spider.NO.Data;
 
 namespace Spider.NO;
 
+/// <summary>
+/// Harvest data from startlist pages. 
+/// </summary>
+/// <param name="url"></param>
 public class StartlistHarvestNo(string url)
 {
     // xpaths for elements to harvest
@@ -72,16 +76,16 @@ public class StartlistHarvestNo(string url)
                     RaceCourse = raceCourseName,
                     Date = raceDate,
                     RaceNumber = raceNumber,
-                    StartNumber = startNumber!,
+                    StartNumber = startNumber!.Trim(),
                     HorseSourceId = _extractUrlEnd(horseLink!),
                     DriverSourceId = _extractUrlEnd(driverLink!),
                     ForeShoe = foreShoe!,
                     HindShoe = hindShoe!,
-                    TrackNumber = trackNumber!,
-                    Turn = turn!,
-                    Auto = auto!,
-                    Distance = distance!,
-                    Cart = cart!,
+                    TrackNumber = trackNumber!.Trim(),
+                    Turn = turn!.Trim(),
+                    Auto = auto!.Trim(),
+                    Distance = distance!.Trim(),
+                    Cart = cart!.Trim(),
                     HasGambling = hasGambling
                 };
                 CollectedData.Add(item);
@@ -110,5 +114,4 @@ public class StartlistHarvestNo(string url)
         var length = urlSplit.Length;
         return urlSplit[length - 1].Trim();
     }
-
 }
