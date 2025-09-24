@@ -7,11 +7,11 @@ namespace Scraping.Spider.NO;
 /// Harvest Data from drivers page. Require source id of driver to run.
 /// Does also accept a range of driver source ids.
 /// </summary>
-public class DriverHarvestNo
+public class DriverBotNo
 {
     // values for min and max option in table select box
-    private const short MaxYear = 2010;
-    private const short MinYear = 2010;
+    private const short MaxYear = 2025;
+    private const short MinYear = 2025;
     
     // driver data xpaths
     private const string YearOfBirthXpath = "//article//h1/small";
@@ -42,13 +42,13 @@ public class DriverHarvestNo
     public List<ResultScrapeData> RaceDataCollected = [];
 
     // constructors
-    public DriverHarvestNo(string driverSourceId)
+    public DriverBotNo(string driverSourceId)
     {
         DriverSourceId = driverSourceId;
         DriverSourceIds = [];
     }
 
-    public DriverHarvestNo(string[] horseSourceIds)
+    public DriverBotNo(string[] horseSourceIds)
     {
         DriverSourceId = string.Empty;
         DriverSourceIds = horseSourceIds;
