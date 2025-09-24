@@ -1,6 +1,6 @@
-﻿using Spider.NO.Options;
+﻿using Scraping.Spider.NO.Options;
 
-namespace Spider.NO;
+namespace Scraping.Spider.NO;
 
 public class MasterBotNo: BaseRobot
 {

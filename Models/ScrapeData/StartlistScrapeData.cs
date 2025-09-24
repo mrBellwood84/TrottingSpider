@@ -1,4 +1,4 @@
-﻿namespace Spider.NO.Data;
+﻿namespace Models.ScrapeData;
 
 public struct StartlistScrapeData
 {

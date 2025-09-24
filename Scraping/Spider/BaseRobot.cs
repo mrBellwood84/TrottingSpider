@@ -1,5 +1,6 @@
-﻿namespace Spider;
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
+
+namespace Scraping.Spider;
 
 public class BaseRobot
 {

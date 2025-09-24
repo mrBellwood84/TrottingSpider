@@ -1,4 +1,4 @@
-﻿namespace Spider.NO.Options;
+﻿namespace Scraping.Spider.NO.Options;
 
 public struct CalendarDateMonthOptions
 {

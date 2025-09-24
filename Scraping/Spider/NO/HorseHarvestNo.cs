@@ -1,7 +1,7 @@
 ﻿using Microsoft.Playwright;
-using Spider.NO.Data;
+using Models.ScrapeData;
 
-namespace Spider.NO;
+namespace Scraping.Spider.NO;
 
 /// <summary>
 /// Harvests data from horse page. Require horse source id to run
