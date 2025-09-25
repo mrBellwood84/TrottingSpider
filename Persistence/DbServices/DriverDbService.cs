@@ -1,10 +1,11 @@
-﻿using Models.Record;
+﻿using Models.DbModels;
+using Models.Settings;
 
-namespace Persistence;
+namespace Persistence.DbServices;
 
 public class DriverDbService : BaseDbService<Driver>
 {
-    public DriverDbService(string connectionString) : base(connectionString)
+    public DriverDbService(DbConnectionStrings connectionStrings) : base(connectionStrings)
     {
         Query = "SELECT * FROM driver ORDER BY SourceId ASC";
         InsertCommand = 

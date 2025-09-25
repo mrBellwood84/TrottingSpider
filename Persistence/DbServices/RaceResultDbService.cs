@@ -1,10 +1,11 @@
-﻿using Models.Record;
+﻿using Models.DbModels;
+using Models.Settings;
 
-namespace Persistence;
+namespace Persistence.DbServices;
 
 public class RaceResultDbService : BaseDbService<RaceResult>
 {
-    public RaceResultDbService(string connectionString) : base(connectionString)
+    public RaceResultDbService(DbConnectionStrings connectionStrings) : base(connectionStrings)
     {
         Query = "SELECT * FROM RaceResult";
         InsertCommand =

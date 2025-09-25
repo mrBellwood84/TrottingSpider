@@ -1,0 +1,11 @@
+﻿namespace Models.DbModels;
+
+public class RaceCourse
+{
+    public string Id { get; init; }
+    public string CountryId { get; init; }
+    public string Name { get; init; }
+    public string Code { get; init; }
+    public float Latitude { get; init; }
+    public float Longitude { get; init; }
+}

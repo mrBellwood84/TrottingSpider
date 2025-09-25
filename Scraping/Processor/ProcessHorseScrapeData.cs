@@ -1,5 +1,5 @@
 ﻿using Application.AppLogger;
-using Models.Record;
+using Models.DbModels;
 using Models.ScrapeData;
 
 namespace Scraping.Processor;

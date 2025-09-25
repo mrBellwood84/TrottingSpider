@@ -1,11 +1,11 @@
-﻿using Dapper;
-using Models.Record;
+﻿using Models.DbModels;
+using Models.Settings;
 
-namespace Persistence;
+namespace Persistence.DbServices;
 
-public class DriverLicenseBaseDbService : BaseDbService<DriverLicense>
+public class DriverLicenseDbService : BaseDbService<DriverLicense>
 {
-    public DriverLicenseBaseDbService(string connectionString) : base(connectionString)
+    public DriverLicenseDbService(DbConnectionStrings connectionStrings) : base(connectionStrings)
     {  
         Query = "SELECT * FROM DriverLicense ORDER BY code";
         InsertCommand = "INSERT INTO DriverLicense (id, code, description) " +

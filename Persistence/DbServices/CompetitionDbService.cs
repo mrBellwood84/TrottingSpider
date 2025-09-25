@@ -1,10 +1,11 @@
-﻿using Models.Record;
+﻿using Models.DbModels;
+using Models.Settings;
 
-namespace Persistence;
+namespace Persistence.DbServices;
 
 public class CompetitionDbService : BaseDbService<Competition>
 {
-    public CompetitionDbService(string connectionString) : base(connectionString)
+    public CompetitionDbService(DbConnectionStrings connectionStrings) : base(connectionStrings)
     {
         Query = "SELECT * FROM Competition";
         InsertCommand = "INSERT INTO Competition (id, raceCourseId, date) " +
