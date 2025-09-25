@@ -28,6 +28,7 @@ public class App
         
         // add services from extensions
         services.AddDbServices();
+        services.AddCacheServices();
         
         // add pipeline
         services.AddTransient<TestPipeline>();
