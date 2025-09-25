@@ -1,13 +1,16 @@
-﻿using Application.AppLogger;
+﻿/*
+using Application.AppLogger;
 using Models.DbModels;
 using Models.ScrapeData;
 using Persistence;
 using Scraping.Spider.NO;
+*/
 
 namespace Scraping.Processor;
 
 public class ProcessDriverScrapeData(Dictionary<string, string> licenseCodeDict)
 {
+/*
     private Dictionary<string, string> LicenseCodeDict = licenseCodeDict;
     private readonly AppLogger _logger = new AppLogger();
 
@@ -65,4 +68,6 @@ public class ProcessDriverScrapeData(Dictionary<string, string> licenseCodeDict)
         CreateNewDriverLicense = newDriverLicence;
         return newDriverLicence.Id;
     }
+    
+    */
 }

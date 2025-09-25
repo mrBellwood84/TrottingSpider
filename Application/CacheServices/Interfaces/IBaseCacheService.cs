@@ -1,4 +1,4 @@
-﻿namespace Application.CacheServices;
+﻿namespace Application.CacheServices.Interfaces;
 
 public interface IBaseCacheService<TModel>
 {
@@ -12,6 +12,12 @@ public interface IBaseCacheService<TModel>
     /// </summary>
     /// <param name="models"></param>
     void AddRange(IEnumerable<TModel> models);
+
+    /// <summary>
+    /// Clear cache before adding list of models
+    /// </summary>
+    /// <param name="models"></param>
+    void InitCache(IEnumerable<TModel> models);
 
     /// <summary>
     /// Create key from provided dataset
@@ -32,4 +38,10 @@ public interface IBaseCacheService<TModel>
     /// Get model stored in cache from  defined key
     /// </summary>
     TModel GetModel(string key);
+
+    /// <summary>
+    /// Return true if dictionary have no entries
+    /// </summary>
+    /// <returns></returns>
+    bool CheckDictionaryEmpty();
 }

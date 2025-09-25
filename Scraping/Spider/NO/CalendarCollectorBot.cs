@@ -1,12 +1,14 @@
 ﻿using Microsoft.Playwright;
 using Models.ScrapeData;
+using Models.Settings;
 
 namespace Scraping.Spider.NO;
 
 /// <summary>
 /// Harvest links for startlists and for the year and month provided!
 /// </summary>
-public class RaceCalendarHarvestNo(string yearOption, string monthOption)
+public class CalendarCollectorBot(BrowserOptions options, string year, string month)
+    : BaseRobot(options)
 {
     private const string CalendarUrl = "https://www.travsport.no/sportsbasen/lopskalender/";
 
@@ -22,13 +24,15 @@ public class RaceCalendarHarvestNo(string yearOption, string monthOption)
     private const string ResultLinkXpath = "//a[contains(text(), \"Resultater\")]";
 
     // select box options
-    private string YearOption { get; } = yearOption;
-    private string MonthOption { get; } = monthOption;
-    private List<string> RaceCourseOptions { get; } = [];
-
+    private readonly List<string> _raceCourseOptions  = [];
+    
+    // options for collector
+    private readonly string _year = year;
+    private readonly string _month = month;
+    
     // collected data to be parsed
     public List<CalendarScrapeData> DataCollected { get; } = [];
-    
+
     /// <summary>
     /// Run method for iterating race courses at given year and month.
     /// Will collect scraped data in stored unparsed in the DataCollected property. 
@@ -39,14 +43,14 @@ public class RaceCalendarHarvestNo(string yearOption, string monthOption)
         await page.GotoAsync(CalendarUrl);
 
         await page.WaitForSelectorAsync(YearSelectXpath);
-        await page.Locator(YearSelectXpath).SelectOptionAsync(YearOption);
+        await page.Locator(YearSelectXpath).SelectOptionAsync(_year);
 
         await page.WaitForSelectorAsync(MonthSelectXpath);
-        await page.Locator(MonthSelectXpath).SelectOptionAsync(MonthOption);
+        await page.Locator(MonthSelectXpath).SelectOptionAsync(_month);
 
-        if (RaceCourseOptions.Count == 0) await _initRaceCourseOptions(page);
+        if (_raceCourseOptions.Count == 0) await _initRaceCourseOptions(page);
 
-        foreach (var option in RaceCourseOptions)
+        foreach (var option in _raceCourseOptions)
         {
             await page.WaitForSelectorAsync(RaceCourseSelectXpath);
             await page.Locator(RaceCourseSelectXpath).SelectOptionAsync(option);
@@ -69,7 +73,7 @@ public class RaceCalendarHarvestNo(string yearOption, string monthOption)
         {
             var value = await optionElement.GetAttributeAsync("value");
             if (value == "0") continue;
-            RaceCourseOptions.Add(value!);
+            _raceCourseOptions.Add(value!);
         }
     }
 
@@ -122,7 +126,7 @@ public class RaceCalendarHarvestNo(string yearOption, string monthOption)
             catch (TimeoutException) {}
 
             item.Date = date != null ? date.Trim() : string.Empty;
-            item.TrackTime = trackAndTime != null ? trackAndTime.Trim() : string.Empty;
+            item.CourseAndTime = trackAndTime != null ? trackAndTime.Trim() : string.Empty;
             item.StartlistHref = startlistLink ??  string.Empty;
             item.ResultHref = resultLink ??  string.Empty;
             

@@ -1,5 +1,6 @@
-﻿using ConsoleApp.Extensions;
-using ConsoleApp.Pipelines;
+﻿using Application.Pipelines;
+using Application.Pipelines.NO;
+using ConsoleApp.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Models.Settings;
@@ -18,27 +19,30 @@ public class App
             .Build();
         
         // get settings from config file
+        var browserOptions = configuration.GetSection("BrowserOptions").Get<BrowserOptions>();
         var dbSettings = configuration.GetSection("ConnectionStrings").Get<DbConnectionStrings>();
-        var scraperSettings = configuration.GetSection("Urls").Get<SpiderUrlCollection>();
+        var scraperSettings = configuration.GetSection("ScraperSettings").Get<ScraperSettings>();
         
         // create services collection and add settings
         var services = new ServiceCollection();
+        services.AddSingleton(browserOptions!);
         services.AddSingleton(dbSettings!);
         services.AddSingleton(scraperSettings!);
         
         // add services from extensions
-        services.AddDbServices();
         services.AddCacheServices();
+        services.AddDbServices();
+        services.AddDataServices();
         
         // add pipeline
-        services.AddTransient<TestPipeline>();
+        services.AddTransient<TestCalendarCollector>();
         
         _serviceProvider = services.BuildServiceProvider();
     }
 
     public async Task Run()
     {
-        var pipeline = _serviceProvider.GetService<TestPipeline>();
+        var pipeline = _serviceProvider.GetService<TestCalendarCollector>();
         await pipeline!.Run();
     }
 

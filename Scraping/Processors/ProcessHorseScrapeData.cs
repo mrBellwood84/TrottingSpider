@@ -1,11 +1,13 @@
-﻿using Application.AppLogger;
+﻿/*
+using Application.AppLogger;
 using Models.DbModels;
 using Models.ScrapeData;
-
+*/
 namespace Scraping.Processor;
 
 public class ProcessHorseScrapeData
 {
+    /*
     private readonly AppLogger _logger = new AppLogger();
 
     public Horse Process(HorseScrapeData data)
@@ -34,5 +36,5 @@ public class ProcessHorseScrapeData
             return 1900;
         }
     }
-    
+    */
 }

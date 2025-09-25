@@ -7,11 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="DataServices\Interfaces\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Models\Models.csproj" />
+      <ProjectReference Include="..\Persistence\Persistence.csproj" />
+      <ProjectReference Include="..\Scraping\Scraping.csproj" />
     </ItemGroup>
 
 </Project>

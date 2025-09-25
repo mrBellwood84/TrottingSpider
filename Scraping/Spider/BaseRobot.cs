@@ -1,15 +1,16 @@
-﻿using Microsoft.Playwright;
+﻿using Models.Settings;
+using Microsoft.Playwright;
 
 namespace Scraping.Spider;
 
 public class BaseRobot
 {
     private readonly BrowserTypeLaunchOptions _browserOptions;
-    public BaseRobot()
+    public BaseRobot(BrowserOptions options)
     {
-        _browserOptions = GetBrowserTypeLaunchOptions();
+        _browserOptions = _parseBrowserOptions(options);
     }
-    
+
     /// <summary>
     /// Run browser with page operation as callback function
     /// </summary>
@@ -26,12 +27,12 @@ public class BaseRobot
     /// Create browser options
     /// </summary>
     /// <returns></returns>
-    private BrowserTypeLaunchOptions GetBrowserTypeLaunchOptions()
+    private BrowserTypeLaunchOptions _parseBrowserOptions(BrowserOptions options)
     {
         return new BrowserTypeLaunchOptions
         {
-            Headless = false,
-            SlowMo = 1000
+            Headless = options.Headless,
+            SlowMo = options.SlowMo,
         };
     }
 }

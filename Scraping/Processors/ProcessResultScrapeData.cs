@@ -1,10 +1,11 @@
-﻿using Models.DbModels;
+﻿/*using Models.DbModels;
 using Models.ScrapeData;
-
+*/
 namespace Scraping.Processor;
 
 public class ProcessResultScrapeData
 {
+    /*
     private Dictionary<string, string> RaceCourses { get; set;}
     private Dictionary<string, string> Competitions { get; set; }
     private Dictionary<string, string> Races { get; set; }
@@ -64,4 +65,5 @@ public class ProcessResultScrapeData
         var number = raceNumber.Split("-")[1];
         return int.Parse(number);
     }
+    */
 }

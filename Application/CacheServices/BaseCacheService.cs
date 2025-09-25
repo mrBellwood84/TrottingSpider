@@ -1,4 +1,6 @@
-﻿namespace Application.CacheServices;
+﻿using Application.CacheServices.Interfaces;
+
+namespace Application.CacheServices;
 
 /// <summary>
 /// Cache service holds db model ids based on provided key
@@ -24,6 +26,16 @@ public class BaseCacheService<TModel> : IBaseCacheService<TModel>
     public void AddRange(IEnumerable<TModel> models)
     {
         foreach (var model in models) AddSingle(model);
+    }
+    
+    /// <summary>
+    /// Clear cache before adding list of models
+    /// </summary>
+    /// <param name="models"></param>
+    public void InitCache(IEnumerable<TModel> models)
+    {
+        _cache.Clear();
+        AddRange(models);
     }
 
     /// <summary>
@@ -57,5 +69,14 @@ public class BaseCacheService<TModel> : IBaseCacheService<TModel>
     public TModel GetModel(string key)
     {
         return CheckKeyExists(key) ? _cache[key] : throw new Exception("Key not found");
+    }
+    
+    /// <summary>
+    /// Return true if dictionary have no entries
+    /// </summary>
+    /// <returns></returns>
+    public bool CheckDictionaryEmpty()
+    {
+        return _cache.Count == 0;
     }
 }
