@@ -1,7 +1,7 @@
 ﻿/*using Models.DbModels;
 using Models.ScrapeData;
 */
-namespace Scraping.Processor;
+namespace Scraping.Processors;
 
 public class ProcessResultScrapeData
 {

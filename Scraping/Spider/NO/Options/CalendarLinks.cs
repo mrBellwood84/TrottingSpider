@@ -2,8 +2,13 @@
 
 public struct CalendarLinks
 {
-    public string Date { get; set; }
-    public string RaceCourseName { get; set; }
-    public string StartlistLink { get; set; }
-    public string ResultsLink { get; set; }
+    public CalendarLinks() { }
+
+    public string Date { get; init; } = null;
+    public string RaceCourseName { get; init; } = null;
+    public string StartlistLink { get; init; } = null;
+    public bool StartlistFromSource { get; set; } = false;
+    public string ResultsLink { get; init; } = null;
+    public bool ResultsFromSource { get; set; } = false;
+    
 }

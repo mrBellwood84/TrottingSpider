@@ -1,5 +1,4 @@
-﻿using Application.Pipelines;
-using Application.Pipelines.NO;
+﻿using Application.Pipelines.NO;
 using ConsoleApp.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,16 +33,20 @@ public class App
         services.AddDbServices();
         services.AddDataServices();
         
+        //
+        
         // add pipeline
-        services.AddTransient<TestCalendarCollector>();
+        services.AddTransient<Pipeline>();
         
         _serviceProvider = services.BuildServiceProvider();
     }
-
-    public async Task Run()
+    
+    public async Task RunTrottingNoAsync()
     {
-        var pipeline = _serviceProvider.GetService<TestCalendarCollector>();
-        await pipeline!.Run();
+        var pipeline = _serviceProvider.GetService<Pipeline>();
+        await pipeline!.RunAsync();
     }
 
+
+    
 }

@@ -1,5 +1,4 @@
-﻿
-using ConsoleApp;
+﻿using ConsoleApp;
 
 var app = new App();
-await app.Run();
+await app.RunTrottingNoAsync();

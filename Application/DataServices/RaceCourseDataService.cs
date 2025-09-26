@@ -5,13 +5,14 @@ using Persistence.Interfaces;
 
 namespace Application.DataServices;
 
-public class RaceCourseDataService(IBaseDbService<RaceCourse> dbService, IBaseCacheService<RaceCourse> cacheService) : IRaceCourseDataService
+public class RaceCourseDataService(IBaseDbService<RaceCourse> dbService, IBaseCacheService<RaceCourse> cacheService) 
+    : IRaceCourseDataService
 {    
     public async Task InitCache()
-     {
-         var data = await dbService.GetAllAsync();
-         cacheService.InitCache(data);
-     }
+    {
+        var data = await dbService.GetAllAsync();
+        cacheService.InitCache(data);
+    }
     public bool CheckRaceCourseExists(string raceCourseName)
     {
         return cacheService.CheckKeyExists(raceCourseName);
@@ -28,6 +29,7 @@ public class RaceCourseDataService(IBaseDbService<RaceCourse> dbService, IBaseCa
 
     public async Task AddNewRaceCourse(RaceCourse newRaceCourse)
     {
+        Console.WriteLine($" -> Creating new racecourse: {newRaceCourse.Name}");
         await dbService.CreateAsync(newRaceCourse);
         cacheService.AddSingle(newRaceCourse);
     }

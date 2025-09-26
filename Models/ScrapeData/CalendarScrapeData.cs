@@ -10,8 +10,14 @@
 
 public struct CalendarScrapeData
 {
-    public string Date;
-    public string CourseAndTime;
-    public string StartlistHref;
-    public string ResultHref;
+    public CalendarScrapeData() { }
+
+    public string Date {  get; init; } = null;
+    public string CourseAndTime { get; init; } = null;
+    public string StartlistHref { get; init; } = null;
+    public string ResultHref  { get; init; } = null;
+
+    public bool StartlistFromSource { get; set; } = false;
+    public bool ResultsFromSource { get; set; } = false;
+    
 }

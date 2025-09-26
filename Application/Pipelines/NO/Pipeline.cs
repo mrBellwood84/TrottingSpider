@@ -1,58 +1,97 @@
-﻿using Models.Settings;
+﻿using Application.DataServices.Interfaces;
+using Application.Pipelines.NO.Steps;
+using Models.Settings;
 using Scraping.Spider.NO.Options;
 
 namespace Application.Pipelines.NO;
 
 public class Pipeline
 {
+    // data services
+    private readonly IDataServiceCollection _dataServices;
+    
+    // settings
+    private readonly BrowserOptions _browserOptions;
     private readonly ScraperSettings _scraperSettings;
-    private readonly string[] _limitedYearRange;
 
-    public Pipeline(ScraperSettings scraperSettings)
+    public Pipeline(
+        
+        BrowserOptions browserOptions,
+        ScraperSettings scraperSettings,
+        IDataServiceCollection dataServices)
     {
+        _browserOptions = browserOptions;
+        _dataServices = dataServices;
         _scraperSettings = scraperSettings;
-        _limitedYearRange = _setLimitedYearRange(_scraperSettings.YearRange);
     }
     
     public async Task RunAsync()
     {
-        // itterate year month as provided by scraper options
-        // collect starlists and results link for provided year and month
-        // open and collect data from startlist
-        // open and collect data from results list
-        // check sourceid for driver and horse. Unknown to buffer to be resolved
-            // while buffers not cleared
-                // get driver data
-                // get horse data
-                // add drivers and horses to database
-                    // update caches and clear buffers
-                    // unknows added to new buffer
-        // parse startlists data
-        // parse results data
+        // init data cache here
+        await _dataServices.InitializeCache();
+        
+        foreach (var option in _calendarYearMonthOptions())
+        { 
+            
+            // calendar step
+            var calendarStep = new CalendarLinksCollectionStep(_browserOptions,_dataServices,option);
+            var links = await calendarStep.RunAsync();
+            
+            // get and parse calendar options here
+            // new tracks added to db
+
+            // startlist step here 
+            // get and parse startlist here
+            // set buffer for horses and drivers
+
+            // results step
+            // parse results scraped data
+            // check / add to horse and driver buffer
+
+            // resolve driver and horse buffer
+            // includes adding horses and drivers to db
+            // add unknown racecourses to db
+            // add competition / race / startnumbers / results to db
+
+            // update step 
+            // update startlists from parsed data!
+            // update results from parsed data !
+        }
     }
     
-    private string[] _setLimitedYearRange(string[] yearRange)
+    /// <summary>
+    /// Resolve year range based on year array and min/max years set in ScraperSettings.
+    /// These settings are defined in "appsettings.json"
+    /// </summary>
+    private string[] _resolveYearRange(string[] years)
     {
         var result = new List<string>();
-        foreach (var year in yearRange)
+        foreach (var year in years)
         {
-            if (int.Parse(year) <= int.Parse(_scraperSettings.MaxYear)
-                && int.Parse(year) >= int.Parse(_scraperSettings.MinYear)) result.Add(year);
+            var parsedYear = int.Parse(year);
+            if (parsedYear > int.Parse(_scraperSettings.MaxYear)) continue;
+            if (parsedYear < int.Parse(_scraperSettings.MinYear)) continue;
+            result.Add(year);
         }
         return result.ToArray();
     }
-    private IEnumerable<CalendarDateMonthOptions> _allCalendarDateMonthOptions()
+    
+    /// <summary>
+    /// Produces year and month for the calendar link collector within limits of scraper settings
+    /// </summary>
+    private IEnumerable<CalendarDateMonthOptions> _calendarYearMonthOptions()
     {
-        for (int i = 0; i < _limitedYearRange.Length; i++)
-        for (int j = 0; j < _scraperSettings.MonthRange[0..2].Length; j++)
+        var years = _resolveYearRange(_scraperSettings.YearRange);
+        foreach (var y in years)
+        foreach (var m in _scraperSettings.MonthRange)
         {
             var option = new CalendarDateMonthOptions
             {
-                Year = _limitedYearRange[i],
-                Month = _scraperSettings.MonthRange[j],
+                Year = y,
+                Month = m,
             };
             yield return option;
         }
-                
     }
+    
 }

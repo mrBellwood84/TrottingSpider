@@ -34,11 +34,11 @@ public class CalendarCollectorBot(BrowserOptions options, string year, string mo
     public List<CalendarScrapeData> DataCollected { get; } = [];
 
     /// <summary>
-    /// Run method for iterating race courses at given year and month.
+    /// Run method for iterating racecourses at given year and month.
     /// Will collect scraped data in stored unparsed in the DataCollected property. 
     /// </summary>
     /// <param name="page"></param>
-    public async Task Run(IPage page)
+    public async Task Execute(IPage page)
     {
         await page.GotoAsync(CalendarUrl);
 
@@ -59,7 +59,7 @@ public class CalendarCollectorBot(BrowserOptions options, string year, string mo
     }
 
     /// <summary>
-    /// Get race course options in select box. Used if option list is empty
+    /// Get racecourse options in select box. Used if option list is empty
     /// </summary>
     /// <param name="page"></param>
     private async Task _initRaceCourseOptions(IPage page)
@@ -104,12 +104,11 @@ public class CalendarCollectorBot(BrowserOptions options, string year, string mo
         
         for (var i = 0; i < dateList.Count; i++)
         {
-            var item = new CalendarScrapeData();
             
             var date = await dateList[i].TextContentAsync();
             var trackAndTime = await dataList[i].Locator(CourseAndTimeTextXpath).TextContentAsync();
-            string? startlistLink = null;
-            string? resultLink = null;
+            string startlistLink = null;
+            string resultLink = null;
 
             try
             {
@@ -125,10 +124,16 @@ public class CalendarCollectorBot(BrowserOptions options, string year, string mo
             }
             catch (TimeoutException) {}
 
-            item.Date = date != null ? date.Trim() : string.Empty;
-            item.CourseAndTime = trackAndTime != null ? trackAndTime.Trim() : string.Empty;
-            item.StartlistHref = startlistLink ??  string.Empty;
-            item.ResultHref = resultLink ??  string.Empty;
+            var item = new CalendarScrapeData
+            {
+                Date = date != null ? date.Trim() : string.Empty,
+                CourseAndTime = trackAndTime != null ? trackAndTime.Trim() : string.Empty,
+                StartlistHref = startlistLink ?? string.Empty,
+                ResultHref = resultLink ?? string.Empty,
+                StartlistFromSource = false,
+                ResultsFromSource = false,
+            };
+                
             
             if (item.StartlistHref == string.Empty) continue;
             DataCollected.Add(item);

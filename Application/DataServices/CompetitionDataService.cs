@@ -5,7 +5,8 @@ using Persistence.Interfaces;
 
 namespace Application.DataServices;
 
-public class CompetitionDataService(IBaseDbService<Competition>  dbService, IBaseCacheService<Competition> cacheService) : ICompetitionDataService
+public class CompetitionDataService(IBaseDbService<Competition>  dbService, IBaseCacheService<Competition> cacheService) 
+    : ICompetitionDataService
 {
     public async Task InitCache()
     {

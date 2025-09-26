@@ -9,7 +9,7 @@ public class CalendarDataProcessor
     {
         return new CalendarLinks
         {
-            Date = _extractUrlEnd(data.Date),
+            Date = _extractUrlEnd(data.StartlistHref),
             RaceCourseName = _parseRaceCourseName(data.CourseAndTime),
             StartlistLink = data.StartlistHref,
             ResultsLink = data.ResultHref
@@ -18,9 +18,8 @@ public class CalendarDataProcessor
 
     private string _parseRaceCourseName(string rawData)
     {
-        var split = rawData.Split(" ");
-        var l = split.Length - 2;
-        return string.Join(" ", split[..l]).ToUpper();
+        var split = rawData.Split("kl");
+        return split[0].Trim().ToUpper();
     }
     
     private string _extractUrlEnd(string url)

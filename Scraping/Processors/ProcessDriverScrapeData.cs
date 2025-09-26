@@ -6,7 +6,7 @@ using Persistence;
 using Scraping.Spider.NO;
 */
 
-namespace Scraping.Processor;
+namespace Scraping.Processors;
 
 public class ProcessDriverScrapeData(Dictionary<string, string> licenseCodeDict)
 {
