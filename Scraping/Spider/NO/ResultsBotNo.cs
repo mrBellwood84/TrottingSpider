@@ -1,16 +1,15 @@
 ﻿using Microsoft.Playwright;
 using Models.ScrapeData;
+using Models.Settings;
 
 namespace Scraping.Spider.NO;
 
-public class ResultsHarvestNo(string url)
+public class ResultsBotNo(BrowserOptions options, string url) : BaseRobot(options)
 {
     // xpaths for elements to havest
     private const string RaceCourseNameXpath = "//article/div/div/div/div[1]";
     private const string RacePanelXpath = "//div[@role=\"tabpanel\"]";
     private const string RacePanelTableRowXpath = "//div[3]/table/tbody/tr[1]";
-    
-    
     
     // url for page navigation
     private string Url { get; } = url;
@@ -18,7 +17,7 @@ public class ResultsHarvestNo(string url)
     // list of data collected
     public List<ResultScrapeData> DataCollected = [];
 
-    public async Task Run(IPage page)
+    public async Task Execute(IPage page)
     {
         // navigate to url
         await page.GotoAsync(Url);
@@ -46,7 +45,8 @@ public class ResultsHarvestNo(string url)
                 var distance = await cells[2].TextContentAsync();
                 var foreShoe = await cells[7].Locator("//span[1]").GetAttributeAsync("class");
                 var hindShoe = await cells[7].Locator("//span[2]").GetAttributeAsync("class");
-                var cart = await cells[9].TextContentAsync();
+                var cart = await cells[8].TextContentAsync();
+                var odds = await cells[9].TextContentAsync();
                 var place = await cells[0].TextContentAsync();
                 var time = await cells[3].TextContentAsync();
                 var kmTime = await cells[4].TextContentAsync();
@@ -65,6 +65,7 @@ public class ResultsHarvestNo(string url)
                     ForeShoe = foreShoe!.Trim(),
                     HindShoe = hindShoe!.Trim(),
                     Cart = cart!.Trim(),
+                    Odds = odds!.Trim(),
                     Place = place!.Trim(),
                     Time = time!.Trim(),
                     KmTime = kmTime!.Trim(),

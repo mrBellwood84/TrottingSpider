@@ -1,5 +1,6 @@
 ﻿using Microsoft.Playwright;
 using Models.ScrapeData;
+using Models.Settings;
 
 namespace Scraping.Spider.NO;
 
@@ -7,7 +8,7 @@ namespace Scraping.Spider.NO;
 /// Harvest data from startlist pages. 
 /// </summary>
 /// <param name="url"></param>
-public class StartlistHarvestNo(string url)
+public class StartlistBotNo(BrowserOptions options, string url) : BaseRobot(options)
 {
     // xpaths for elements to harvest
     private const string RaceCourseNameXpath = "//article/div/div/div/div[1]";
@@ -28,7 +29,7 @@ public class StartlistHarvestNo(string url)
     /// </summary>
     public List<StartlistScrapeData> CollectedData { get; } = [];
 
-    public async Task Run(IPage page)
+    public async Task Execute(IPage page)
     {
         await page.GotoAsync(Url);
         

@@ -1,4 +1,5 @@
-﻿using Application.Pipelines.NO;
+﻿using Application.Pipelines;
+using Application.Pipelines.NO;
 using ConsoleApp.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,8 +34,6 @@ public class App
         services.AddDbServices();
         services.AddDataServices();
         
-        //
-        
         // add pipeline
         services.AddTransient<Pipeline>();
         
@@ -46,7 +45,4 @@ public class App
         var pipeline = _serviceProvider.GetService<Pipeline>();
         await pipeline!.RunAsync();
     }
-
-
-    
 }
