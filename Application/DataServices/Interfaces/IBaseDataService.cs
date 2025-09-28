@@ -2,8 +2,9 @@
 
 public interface IBaseDataService<TModel>
 {
-    Task InitCache();
-    bool CheckExists(string key);
-    TModel GetModel(string key);
-    Task CreateAsync(TModel model);
+    public Task InitCache();
+    public bool CheckExists(string key);
+    public TModel GetModel(string key);
+    public Task AddAsync(TModel model);
+    public Task AddAsync(List<TModel> models);
 }

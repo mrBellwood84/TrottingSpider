@@ -44,4 +44,9 @@ public interface IBaseCacheService<TModel>
     /// </summary>
     /// <returns></returns>
     bool CheckDictionaryEmpty();
+
+    /// <summary>
+    /// Get full dictionary from cache
+    /// </summary>
+    Dictionary<string, TModel> GetFullCache();
 }

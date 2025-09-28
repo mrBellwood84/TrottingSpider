@@ -1,5 +1,6 @@
 ﻿using Microsoft.Playwright;
 using Models.ScrapeData;
+using Models.Settings;
 
 namespace Scraping.Spider.NO;
 
@@ -7,12 +8,11 @@ namespace Scraping.Spider.NO;
 /// Harvests data from horse page. Require horse source id to run
 /// Does allow a range of drivers source ids
 /// </summary>
-public class HorseBotNo
+public class HorseBotNo(
+    BrowserOptions browserOptions,
+    ScraperSettings scraperSettings,
+    string horseSourceId) : BaseRobot (browserOptions)
 {
-    // values for min and max option in table select box
-    private const short MaxYear = 2025;
-    private const short MinYear = 2025;
-    
     //base url for horse data
     private const string BaseUrl = "https://www.travsport.no/sportsbasen/sportssok/horse/";
     
@@ -28,61 +28,28 @@ public class HorseBotNo
     // result table xpaths
     private const string ResultTableRowXpath = "//section[@id=\"starts\"]//tbody/tr";
     
-    // horse source id set in primary constructor
-    private string HorseSourceId { get; set; }
-    private string[] HorseSourceIds { get; set; }
 
     /// <summary>
     /// List of scraped horse data
     /// </summary>
-    public List<HorseScrapeData> HorseDataCollected = [];
+    public HorseScrapeData HorseDataCollected { get; private set; }
     /// <summary>
     /// List of scraped result table data
     /// </summary>
     public List<ResultScrapeData> RaceDataCollected = [];
 
-    // constructors
-    public HorseBotNo(string horseSourceId)
-    {
-        HorseSourceId = horseSourceId;
-        HorseSourceIds = [];
-    }
 
-    public HorseBotNo(string[] horseSourceIds)
-    {
-        HorseSourceId = string.Empty;
-        HorseSourceIds = horseSourceIds;
-    }
-
-    
     /// <summary>
-    /// Main method for havester. Runs single og many dependent on range of provided Id's
+    /// Run single source id and gater data from source
     /// </summary>
-    public async Task Run(IPage page)
-    { 
-        if (HorseSourceIds.Length == 0)
-        {
-            await _runSingle(page, HorseSourceId);
-            return;
-        }
-
-        foreach (var id in HorseSourceIds)
-        {
-            await _runSingle(page, id);
-        }
-    }
-    
-    /// <summary>
-    /// Run single source id and gater data from sourec
-    /// </summary>
-    private async Task _runSingle(IPage page, string horseSourceId)
+    public async Task Execute(IPage page)
     {
         // create url and navigate
         var url = $"{BaseUrl}{horseSourceId}";
         await page.GotoAsync(url);
         
         // harvest horse data
-        await _harvestHorseData(page, horseSourceId);
+        await _harvestHorseData(page);
         
         // resolve year select options
         var yearOptions = await _resolveYearOptions(page);
@@ -92,7 +59,7 @@ public class HorseBotNo
             await page.Locator(YearSelectXpath).SelectOptionAsync(year);
             await page.WaitForSelectorAsync(RowSelectXpath);
             await page.Locator(RowSelectXpath).SelectOptionAsync("Alle");
-            await _harvestResultTable(page, horseSourceId);
+            await _harvestResultTable(page);
         }
     }
 
@@ -100,7 +67,7 @@ public class HorseBotNo
     /// <summary>
     /// harvest horse data from page
     /// </summary>
-    private async Task _harvestHorseData(IPage page, string horseSourceId)
+    private async Task _harvestHorseData(IPage page)
     {
         var nameRaw = await page.Locator(NameElementXpath).TextContentAsync();
         var listItems = await page.Locator(HorseInfoListXpath).AllAsync();
@@ -135,18 +102,18 @@ public class HorseBotNo
             Sex = sex!.Trim(),
         };
         
-        HorseDataCollected.Add(newItem);
+        HorseDataCollected = newItem;
     }
     
     /// <summary>
     /// Get data from result table at horse page
     /// </summary>
-    private async Task _harvestResultTable(IPage page, string horseSourceId)
+    private async Task _harvestResultTable(IPage page)
     {
         var rows = await page.Locator(ResultTableRowXpath).AllAsync();
         foreach (var row in rows)
         {
-            var data = await _parseRow(row, horseSourceId);
+            var data = await _parseRow(row);
             RaceDataCollected.Add(data);
         }
     }
@@ -154,7 +121,7 @@ public class HorseBotNo
     /// <summary>
     /// Parse each row for result in result table in horse page
     /// </summary>
-    private async Task<ResultScrapeData> _parseRow(ILocator row, string horseSourceId)
+    private async Task<ResultScrapeData> _parseRow(ILocator row)
     {
         var cells = await row.Locator("td").AllAsync();
 
@@ -169,6 +136,7 @@ public class HorseBotNo
         var cart = await cells[16].TextContentAsync();
         var place = await cells[9].TextContentAsync(); 
         var kmTime = await cells[8].TextContentAsync();
+        var odds = await cells[12].TextContentAsync();
         var rRemark = await cells[10].TextContentAsync();
         var gRemark = await cells[11].TextContentAsync();
 
@@ -187,6 +155,7 @@ public class HorseBotNo
             Cart = cart!,
             Place = place!,
             KmTime = kmTime!,
+            Odds = odds!,
             RRemark = rRemark!,
             GRemark = gRemark!,
             FromDirectSource = false,
@@ -209,17 +178,16 @@ public class HorseBotNo
             var value = await elem.GetAttributeAsync("value");
             
             if (value == "") continue;
-            if (int.Parse(value!) > MaxYear) continue;
-            if (int.Parse(value!) < MinYear) continue;
+            if (int.Parse(value!) > int.Parse(scraperSettings.MaxYear)) continue;
+            if (int.Parse(value!) < int.Parse(scraperSettings.MinYear)) continue;
             result.Add(value!);
         }
-        
         return result;
     }    
     
     /// <summary>
-        /// Get last part of url string
-        /// </summary>
+    /// Get last part of url string
+    /// </summary>
     private string _extractUrlEnd(string url)
     {
         var urlSplit = url.Split('/');

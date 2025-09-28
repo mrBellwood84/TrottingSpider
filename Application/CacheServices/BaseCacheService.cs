@@ -70,6 +70,11 @@ public class BaseCacheService<TModel> : IBaseCacheService<TModel>
     {
         return CheckKeyExists(key) ? _cache[key] : throw new Exception("Key not found");
     }
+
+    public Dictionary<string, TModel> GetFullCache()
+    {
+        return _cache;
+    }
     
     /// <summary>
     /// Return true if dictionary have no entries

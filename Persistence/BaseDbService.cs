@@ -4,7 +4,9 @@ using Persistence.Interfaces;
 
 namespace Persistence;
 
-public class BaseDbService<TModel>(DbConnectionStrings dbConnectionStrings) : DbConnection(dbConnectionStrings), IBaseDbService<TModel>
+public class BaseDbService<TModel>(
+    DbConnectionStrings dbConnectionStrings) 
+    : DbConnection(dbConnectionStrings), IBaseDbService<TModel>
 {
     
     internal string Query { get; init; }
@@ -18,9 +20,15 @@ public class BaseDbService<TModel>(DbConnectionStrings dbConnectionStrings) : Db
         return result.ToList();
     }
 
-    public async Task CreateAsync(TModel model)
+    public async Task AddAsync(TModel model)
     {
         await using var connection = CreateConnection();
         await connection.ExecuteAsync(InsertCommand, model);
+    }
+    
+    public async Task AddAsync(List<TModel> models)
+    {
+        await using var connection = CreateConnection();
+        await connection.ExecuteAsync(InsertCommand, models);
     }
 }

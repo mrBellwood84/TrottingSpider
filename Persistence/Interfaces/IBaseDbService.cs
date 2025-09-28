@@ -3,5 +3,6 @@
 public interface IBaseDbService<TModel>
 {
     Task<List<TModel>> GetAllAsync();
-    Task CreateAsync(TModel model);
+    Task AddAsync(TModel model);
+    Task AddAsync(List<TModel> models);
 }

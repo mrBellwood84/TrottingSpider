@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.SymbolStore;
-using Application.DataServices.Interfaces;
+﻿using Application.DataServices.Interfaces;
 using Models.DbModels;
 using Models.Settings;
 using Scraping.Processors;
@@ -33,13 +32,13 @@ public class CalendarLinksCollectionStep(
             var processed = processor.Process(item);
             
             // check if racecourse and create if not exists
-            var raceCourseExists = dataServices.RaceCourse
-                .CheckRaceCourseExists(processed.RaceCourseName);
+            var raceCourseExists = dataServices.RaceCourseDataService
+                .CheckExists(processed.RaceCourseName);
 
             if (!raceCourseExists)
             {
                 // add racecourse to database if not exist
-                await dataServices.RaceCourse.AddNewRaceCourse(new RaceCourse
+                await dataServices.RaceCourseDataService.AddAsync(new Racecourse
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = processed.RaceCourseName,
@@ -48,17 +47,17 @@ public class CalendarLinksCollectionStep(
             }
             
             // get racecourse item and create a valid competition dict key
-            var raceCourseDbItem = dataServices.RaceCourse.GetRaceCourse(processed.RaceCourseName);
+            var raceCourseDbItem = dataServices.RaceCourseDataService.GetModel(processed.RaceCourseName);
             var competitionKey = $"{raceCourseDbItem.Id}_{processed.Date}";
             
             // check for competition exists in database
-            var competitionExists = dataServices.Competition
-                .CheckCompetitionExists(competitionKey);
+            var competitionExists = dataServices.CompetitionDataService
+                .CheckExists(competitionKey);
 
             if (competitionExists)
             {
                 // ignore links if both have confirmed collected data from source!!!
-                var entity =  dataServices.Competition.GetCompetition(competitionKey);
+                var entity =  dataServices.CompetitionDataService.GetModel(competitionKey);
                 if (entity is { StartlistFromSource: true, ResultsFromSource: true }) continue;
                 
                 // update processed data to concur with from source data in db entity

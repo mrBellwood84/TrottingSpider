@@ -1,5 +1,6 @@
 ﻿using Microsoft.Playwright;
 using Models.ScrapeData;
+using Models.Settings;
 
 namespace Scraping.Spider.NO;
 
@@ -7,12 +8,11 @@ namespace Scraping.Spider.NO;
 /// Harvest Data from drivers page. Require source id of driver to run.
 /// Does also accept a range of driver source ids.
 /// </summary>
-public class DriverBotNo
+public class DriverBotNo(
+    BrowserOptions browserOptions, 
+    ScraperSettings scraperSettings, 
+    string driverSourceId) : BaseRobot(browserOptions)
 {
-    // values for min and max option in table select box
-    private const short MaxYear = 2025;
-    private const short MinYear = 2025;
-    
     // driver data xpaths
     private const string YearOfBirthXpath = "//article//h1/small";
     private const string DriverInfoListXpath = "//ul[@class=\"details-row\"]/li";
@@ -28,60 +28,27 @@ public class DriverBotNo
     //base url for driver data
     private const string BaseUrl = "https://www.travsport.no/sportsbasen/sportssok/driver/";
     
-    // driver id set in primary constructors
-    private string DriverSourceId { get; set; }
-    private string[] DriverSourceIds { get; set; }
-
     /// <summary>
     /// List of scraped driver data
     /// </summary>
-    public List<DriverScapeData> DriverDataCollected = [];
+    public DriverScrapeData DriverDataCollected { get; private set; }
     /// <summary>
     /// List of scraped result table data
     /// </summary>
-    public List<ResultScrapeData> RaceDataCollected = [];
+    public readonly List<ResultScrapeData> RaceDataCollected = [];
 
-    // constructors
-    public DriverBotNo(string driverSourceId)
-    {
-        DriverSourceId = driverSourceId;
-        DriverSourceIds = [];
-    }
-
-    public DriverBotNo(string[] horseSourceIds)
-    {
-        DriverSourceId = string.Empty;
-        DriverSourceIds = horseSourceIds;
-    }
-
-    /// <summary>
-    /// Main method for running driver harvester. Will run dependent of range of provided id's
-    /// </summary>
-    public async Task Run(IPage page)
-    {
-        if (DriverSourceIds.Length == 0)
-        {
-            await _runSingle(page, DriverSourceId);
-            return;
-        }
-
-        foreach (var item in DriverSourceIds)
-        {
-            await _runSingle(page, item);
-        }
-    }
     
     /// <summary>
     /// Get data from page at provided driver id
     /// </summary>
-    private async Task _runSingle(IPage page, string driverSourceId)
+    public async Task Execute(IPage page)
     {
         // create url and navigate
         var url = $"{BaseUrl}{driverSourceId}"; 
         await page.GotoAsync(url);
         
         // havest driver data
-        await _harvestDriverData(page, driverSourceId);
+        await _harvestDriverData(page);
         
         // resolve year select options
         // await page.Locator(StartsButtonXpath).ClickAsync();
@@ -93,14 +60,14 @@ public class DriverBotNo
             await page.Locator(YearSelectXpath).SelectOptionAsync(year);
             await page.WaitForSelectorAsync(RowSelectXpath);
             await page.Locator(RowSelectXpath).SelectOptionAsync("Alle");
-            await _harvestResultTable(page, driverSourceId);
+            await _harvestResultTable(page);
         }
     }
     
     /// <summary>
     /// Harvest driver data from page
     /// </summary>
-    private async Task _harvestDriverData(IPage page, string driverSourceId)
+    private async Task _harvestDriverData(IPage page)
     {
         var listItems = await page.Locator(DriverInfoListXpath).AllAsync();
 
@@ -125,30 +92,30 @@ public class DriverBotNo
             }
         }
 
-        var newItem = new DriverScapeData
+        var newItem = new DriverScrapeData
         {
             SourceId = driverSourceId,
             Name = name!.Trim(),
             YearOfBirth = yob!.Trim(),
             DriverLicense = driverLicense!.Trim(),
         };
-        DriverDataCollected.Add(newItem);
+        DriverDataCollected = newItem;
     }
     
     /// <summary>
     /// Get rows in table and iterate for parsing 
     /// </summary>
-    private async Task _harvestResultTable(IPage page, string driverSourceId)
+    private async Task _harvestResultTable(IPage page)
     {
         var rows =  await page.Locator(ResultTableRowsXpath).AllAsync();
         foreach (var row in rows)
         {
-            var data = await _parseRow(row, driverSourceId);
+            var data = await _parseRow(row);
             RaceDataCollected.Add(data);
         }
     }
 
-    private async Task<ResultScrapeData> _parseRow(ILocator row, string driverSourceId)
+    private async Task<ResultScrapeData> _parseRow(ILocator row)
     {
         var cells = await row.Locator("td").AllAsync();
         
@@ -163,6 +130,7 @@ public class DriverBotNo
         var cart = await cells[19].TextContentAsync();
         var place = await cells[9].TextContentAsync();
         var kmTime = await cells[11].TextContentAsync();
+        var odds = await cells[14].TextContentAsync();
         var rRemark =  await cells[12].TextContentAsync();
         var gRemark = await cells[13].TextContentAsync();
 
@@ -181,6 +149,7 @@ public class DriverBotNo
             Cart = cart!,
             Place = place!,
             KmTime = kmTime!,
+            Odds = odds!,
             RRemark = rRemark!,
             GRemark = gRemark!,
             FromDirectSource = false,
@@ -203,11 +172,10 @@ public class DriverBotNo
             var value = await elem.GetAttributeAsync("value");
             
             if (value == "") continue;
-            if (int.Parse(value!) > MaxYear) continue;
-            if (int.Parse(value!) < MinYear) continue;
+            if (int.Parse(value!) > int.Parse(scraperSettings.MaxYear)) continue;
+            if (int.Parse(value!) < int.Parse(scraperSettings.MinYear)) continue;
             result.Add(value!);
         }
-        
         return result;
     }
     
@@ -220,5 +188,4 @@ public class DriverBotNo
         var length = urlSplit.Length;
         return urlSplit[length - 1].Trim();
     }
-    
 }

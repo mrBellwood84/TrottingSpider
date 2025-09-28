@@ -1,6 +1,9 @@
 ﻿using Application.DataServices.Interfaces;
 using Application.Pipelines.NO.Steps;
+using Models.DbModels;
+using Models.ScrapeData;
 using Models.Settings;
+using Scraping.Spider.NO;
 using Scraping.Spider.NO.Options;
 
 namespace Application.Pipelines.NO;
@@ -10,9 +13,8 @@ public class Pipeline(
     ScraperSettings scraperSettings,
     IDataServiceCollection dataServices)
 {
-    // data services
 
-    // settings
+
 
     public async Task RunAsync()
     {
@@ -20,12 +22,13 @@ public class Pipeline(
         var iterations = _resolveYearRange().Length * scraperSettings.MonthRange.Length;
         
         // init data cache here
-        await dataServices.InitializeCache();
+        await dataServices.InitCaches();
         
         foreach (var option in _calendarYearMonthOptions())
         { 
             AppLogger.LogHeader($"Resolving {++count}/{iterations} - {option.Year} - {option.Month}");
             
+            /*
             // calendar step
             var calendarStep = new CalendarLinksCollectionStep(browserOptions, dataServices, option);
             var calendarLinks = await calendarStep.RunAsync();
@@ -33,11 +36,14 @@ public class Pipeline(
             // collect startlists and results data
             var startlistResultStep = new StartlistResultsCollectionStep(browserOptions, calendarLinks);
             await startlistResultStep.RunAsync();
+            */
+
+            HashSet<string> mockDrivers = ["30040437"];
+            HashSet<string> mockHorses = ["578001020185185"];
             
-            Console.WriteLine($"DEV :: Drivers to collect: {startlistResultStep.Drivers.Count}");
-            Console.WriteLine($"DEV :: Horses to collect: {startlistResultStep.Horses.Count}");
-            
-            break;
+            var driverAndHorsesStep = new DriverAndHorseStep(browserOptions, scraperSettings, dataServices,
+                mockDrivers, mockHorses);
+            await driverAndHorsesStep.RunAsync();
 
             // resolve drivers and horses. 
             // keep updating driver and horse buffer until they are both depleted

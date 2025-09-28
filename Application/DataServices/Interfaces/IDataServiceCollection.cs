@@ -6,7 +6,7 @@ public interface IDataServiceCollection
 {
     IBaseDataService<Competition> CompetitionDataService { get; }
     IBaseDataService<Driver> DriverDataService { get; }
-    IBaseDataService<DriverLicense> DriverLicenseDataService { get; }
+    IDriverLicenseDataService DriverLicenseDataService { get; }
     IBaseDataService<Horse> HorseDataService { get; }
     IBaseDataService<Race> RaceDataService { get; }
     IBaseDataService<Racecourse> RaceCourseDataService { get; }

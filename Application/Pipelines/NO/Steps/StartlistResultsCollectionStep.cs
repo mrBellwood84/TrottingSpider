@@ -20,7 +20,7 @@ public class StartlistResultsCollectionStep(
     {
         // resolve progressbar params
         var message = "Collecting startlists and results!";
-        var options = createProgressBarOptions();
+        var options = CreateProgressBarOptions();
         
         using (var bar = new ProgressBar(calendarLinks.Count, message, options))
             foreach (var item in calendarLinks)
@@ -55,7 +55,7 @@ public class StartlistResultsCollectionStep(
         }
     }
 
-    private ProgressBarOptions createProgressBarOptions()
+    private ProgressBarOptions CreateProgressBarOptions()
     {
         return new ProgressBarOptions
         {

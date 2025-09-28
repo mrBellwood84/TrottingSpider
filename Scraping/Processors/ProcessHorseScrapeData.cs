@@ -1,14 +1,10 @@
-﻿/*
-using Application.AppLogger;
-using Models.DbModels;
+﻿using Models.DbModels;
 using Models.ScrapeData;
-*/
+
 namespace Scraping.Processors;
 
 public class ProcessHorseScrapeData
 {
-    /*
-    private readonly AppLogger _logger = new AppLogger();
 
     public Horse Process(HorseScrapeData data)
     {
@@ -31,10 +27,7 @@ public class ProcessHorseScrapeData
         }
         catch (FormatException)
         {
-            _logger.LogError($"ProcessHorseScrapeData: Invalid year of birth '{yearOfBirth}', horse: {sourceId}");
-            _logger.LogInformation($"ProcessHorseScrapeData: Year of birth set to 1900 for horse: '{sourceId}'");
             return 1900;
         }
     }
-    */
 }

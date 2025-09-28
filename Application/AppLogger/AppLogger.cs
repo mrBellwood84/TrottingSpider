@@ -5,7 +5,7 @@ public static class AppLogger
     public static void LogHeader(string message)
     {
         Console.ForegroundColor = ConsoleColor.Blue;
-        var formatted = $"  == {message} ==\n";
+        var formatted = $"\n  == {message} ==\n";
         Console.WriteLine(formatted);
         Console.ResetColor();
     }
@@ -13,7 +13,7 @@ public static class AppLogger
     public static void LogSubheader(string message)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
-        var formatted = $"  -- {message} --\n";
+        var formatted = $"\n  -- {message} --";
         Console.WriteLine(formatted);
         Console.ResetColor();
     }
@@ -38,6 +38,14 @@ public static class AppLogger
     {
         Console.ForegroundColor = ConsoleColor.Red;
         var formatted = $" [-] {message}";
+        Console.WriteLine(formatted);
+        Console.ResetColor();
+    }
+
+    public static void LogDev(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
+        var formatted = $"DEV :: {message}";
         Console.WriteLine(formatted);
         Console.ResetColor();
     }

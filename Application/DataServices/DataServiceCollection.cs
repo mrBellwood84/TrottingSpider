@@ -6,7 +6,7 @@ namespace Application.DataServices;
 public class DataServiceCollection(
     IBaseDataService<Competition> competitionDataService,
     IBaseDataService<Driver> driverDataService,
-    IBaseDataService<DriverLicense> driverLicenseDataService,
+    IDriverLicenseDataService driverLicenseDataService,
     IBaseDataService<Horse> horseDataService,
     IBaseDataService<Race> raceDataService,
     IBaseDataService<Racecourse> raceCourseDataService,
@@ -15,7 +15,7 @@ public class DataServiceCollection(
 {
     public IBaseDataService<Competition> CompetitionDataService { get; } = competitionDataService;
     public IBaseDataService<Driver> DriverDataService { get; } = driverDataService;
-    public IBaseDataService<DriverLicense> DriverLicenseDataService { get; } = driverLicenseDataService;
+    public IDriverLicenseDataService DriverLicenseDataService { get; } = driverLicenseDataService;
     public IBaseDataService<Horse> HorseDataService { get; } = horseDataService;
     public IBaseDataService<Race> RaceDataService { get; } = raceDataService;
     public IBaseDataService<Racecourse> RaceCourseDataService { get; } = raceCourseDataService;

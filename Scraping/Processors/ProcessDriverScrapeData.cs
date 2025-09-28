@@ -1,35 +1,25 @@
-﻿/*
-using Application.AppLogger;
-using Models.DbModels;
+﻿using Models.DbModels;
 using Models.ScrapeData;
-using Persistence;
-using Scraping.Spider.NO;
-*/
 
 namespace Scraping.Processors;
 
-public class ProcessDriverScrapeData(Dictionary<string, string> licenseCodeDict)
+public class ProcessDriverScrapeData(Dictionary<string, DriverLicense> driverLicenses)
 {
-/*
-    private Dictionary<string, string> LicenseCodeDict = licenseCodeDict;
-    private readonly AppLogger _logger = new AppLogger();
-
-    public DriverLicense? CreateNewDriverLicense { get; set; } = null;
-
-    public Driver Process(DriverScapeData data)
+    public DriverLicense NewDriverLicense { get; private set; } = null;
+    
+    public Driver Process(DriverScrapeData rawData) {
     {
-        var driver = new Driver
+        return new Driver
         {
             Id = Guid.NewGuid().ToString(),
-            SourceId = data.SourceId,
-            Name = data.Name,
-            YearOfBirth = _parseYearOfBirth(data.YearOfBirth, data.SourceId),
-            DriverLicenseId = _parseLicenseCode(data.DriverLicense, data.SourceId)
+            DriverLicenseId = _parseLicenseCode(rawData.DriverLicense),
+            SourceId = rawData.SourceId,
+            Name = rawData.Name,
+            YearOfBirth = _parseYearOfBirth(rawData.YearOfBirth),
         };
-        return driver;
-    }
-
-    private int _parseYearOfBirth(string yearOfBirth, string sourceId)
+    }}
+    
+    private int _parseYearOfBirth(string yearOfBirth)
     {
         try
         {
@@ -37,37 +27,25 @@ public class ProcessDriverScrapeData(Dictionary<string, string> licenseCodeDict)
         }
         catch (FormatException)
         {
-            _logger.LogError($"ProcessDriverScrapeData: Invalid year of birth '{yearOfBirth}', driver: {sourceId}");
-            _logger.LogInformation($"ProcessDriverScrapeData: Year of birth set to 1900 for driver: '{sourceId}'");
             return 1900;
         }
     }
-
-    private string _parseLicenseCode(string licenseCode, string sourceId)
+    private string _parseLicenseCode(string licenseCode)
     {
         var splitted =  licenseCode.Split(')');
         if (splitted.Length < 2)
-        {
-            _logger.LogError($"ProcessDriverScrapeData: Invalid licence field provided: '{licenseCode}' for driver: {sourceId}");
-            _logger.LogError($"ProcessDriverScrapeData: Code set to ' - ' for driver: '{sourceId}'");
             return " - ";
-        }
-        var code = splitted[0].Split("(")[1].Trim().ToUpper();
-        if (LicenseCodeDict.TryGetValue(code, out var id)) return id;
         
-        _logger.LogWarning($"ProcessDriverScrapeData: Driver Licence Code not found: '{code}'");
-        _logger.LogWarning($"New DriverLicense will be registered");
+        var code = splitted[0].Split("(")[1].Trim().ToUpper();
+        if (driverLicenses.TryGetValue(code, out var entity)) return entity.Id;
 
-        var newDriverLicence = new DriverLicense
+        NewDriverLicense = new DriverLicense
         {
             Id = Guid.NewGuid().ToString(),
             Code = code,
             Description = splitted[1].Trim(),
         };
-        
-        CreateNewDriverLicense = newDriverLicence;
-        return newDriverLicence.Id;
+
+        return NewDriverLicense.Id;
     }
-    
-    */
 }

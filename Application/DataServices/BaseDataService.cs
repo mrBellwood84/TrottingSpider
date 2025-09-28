@@ -18,10 +18,16 @@ public class BaseDataService<TModel>(
 
     public TModel GetModel(string key) => cacheService.GetModel(key);
 
-    public async Task CreateAsync(TModel model)
+    public async Task AddAsync(TModel model)
     {
-        await dbService.CreateAsync(model);
+        await dbService.AddAsync(model);
         cacheService.AddSingle(model);
+    }
+
+    public async Task AddAsync(List<TModel> models)
+    {
+        await dbService.AddAsync(models);
+        cacheService.AddRange(models);
     }
 }
     

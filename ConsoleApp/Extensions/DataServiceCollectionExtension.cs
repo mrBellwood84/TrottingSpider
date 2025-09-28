@@ -1,6 +1,7 @@
 ﻿using Application.CacheServices;
 using Application.DataServices;
 using Application.DataServices.Interfaces;
+using Application.DataServices.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Models.DbModels;
 
@@ -14,7 +15,7 @@ public static class DataServiceCollectionExtension
 
         services.AddScoped<IBaseDataService<Competition>, CompetitionDataService>();
         services.AddScoped<IBaseDataService<Driver>, DriverDataService>();
-        services.AddScoped<IBaseDataService<DriverLicense> , DriverLicenseDataService>();
+        services.AddScoped<IDriverLicenseDataService , DriverLicenseDataService>();
         services.AddScoped<IBaseDataService<Horse>, HorseDataService>();
         services.AddScoped<IBaseDataService<Race>, RaceDataService>();
         services.AddScoped<IBaseDataService<Racecourse>, RacecourseDataService>();
