@@ -29,7 +29,6 @@ public class RaceCourseDataService(IBaseDbService<RaceCourse> dbService, IBaseCa
 
     public async Task AddNewRaceCourse(RaceCourse newRaceCourse)
     {
-        Console.WriteLine($" -> Creating new racecourse: {newRaceCourse.Name}");
         await dbService.CreateAsync(newRaceCourse);
         cacheService.AddSingle(newRaceCourse);
     }

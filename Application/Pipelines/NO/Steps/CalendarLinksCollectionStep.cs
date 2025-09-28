@@ -1,4 +1,5 @@
-﻿using Application.DataServices.Interfaces;
+﻿using System.Diagnostics.SymbolStore;
+using Application.DataServices.Interfaces;
 using Models.DbModels;
 using Models.Settings;
 using Scraping.Processors;
@@ -17,8 +18,7 @@ public class CalendarLinksCollectionStep(
 
     public async Task<List<CalendarLinks>> RunAsync()
     {
-        Console.WriteLine($"\n -- Collecting Links for Year {calendarOptions.Year} - Month {calendarOptions.Month} --");
-        
+        AppLogger.LogSubheader("Collecting links");
         // create bot and processor
         var bot = new CalendarCollectorBot(browserOptions, calendarOptions.Year, calendarOptions.Month);
         var processor = new CalendarDataProcessor();
@@ -44,13 +44,14 @@ public class CalendarLinksCollectionStep(
                     Id = Guid.NewGuid().ToString(),
                     Name = processed.RaceCourseName,
                 });
+                AppLogger.LogPositive($"New race course added: {processed.RaceCourseName}");
             }
             
             // get racecourse item and create a valid competition dict key
             var raceCourseDbItem = dataServices.RaceCourse.GetRaceCourse(processed.RaceCourseName);
             var competitionKey = $"{raceCourseDbItem.Id}_{processed.Date}";
             
-            // check for competition exists in databae
+            // check for competition exists in database
             var competitionExists = dataServices.Competition
                 .CheckCompetitionExists(competitionKey);
 
@@ -68,8 +69,8 @@ public class CalendarLinksCollectionStep(
         }
         
         // log and process data
-        Console.WriteLine($" - Competitions collected .: {bot.DataCollected.Count}");
-        Console.WriteLine($" - Approved for harvesting : {_processedData.Count}");
+        AppLogger.LogNeutral($"Collected: {bot.DataCollected.Count}");
+        AppLogger.LogNeutral($"Processed for data collection: {_processedData.Count}");
         return _processedData;
     }
 }
