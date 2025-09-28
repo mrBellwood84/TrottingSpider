@@ -3,7 +3,7 @@ using Models.Settings;
 
 namespace Persistence.DbServices;
 
-public class RaceCourseDbService : BaseDbService<RaceCourse>
+public class RaceCourseDbService : BaseDbService<Racecourse>
 {
     public RaceCourseDbService(DbConnectionStrings connectionStrings) : base(connectionStrings)
     {

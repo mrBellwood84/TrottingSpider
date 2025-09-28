@@ -13,7 +13,8 @@ public static class CacheServiceCollectionExtension
         services.AddSingleton<IBaseCacheService<DriverLicense>, DriverLicenseCacheService>();
         services.AddSingleton<IBaseCacheService<Driver>, DriverCacheService>();
         services.AddSingleton<IBaseCacheService<Horse>, HorseCacheService>();
-        services.AddSingleton<IBaseCacheService<RaceCourse>, RaceCourseCacheService>();
+        services.AddSingleton<IBaseCacheService<Race>, RaceCacheService>();
+        services.AddSingleton<IBaseCacheService<Racecourse>, RacecourseCacheService>();
         services.AddSingleton<IBaseCacheService<RaceResult>, RaceResultCacheService>();
         services.AddSingleton<IBaseCacheService<RaceStartNumber>, RaceStartNumberCacheService>();
         

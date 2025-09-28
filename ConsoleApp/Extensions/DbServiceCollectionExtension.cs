@@ -13,7 +13,7 @@ public static class DbServiceCollectionExtension
         services.AddScoped<IBaseDbService<Driver>, DriverDbService>();
         services.AddScoped<IBaseDbService<DriverLicense>, DriverLicenseDbService>();
         services.AddScoped<IBaseDbService<Horse>, HorseDbService>();
-        services.AddScoped<IBaseDbService<RaceCourse>, RaceCourseDbService>();
+        services.AddScoped<IBaseDbService<Racecourse>, RaceCourseDbService>();
         services.AddScoped<IBaseDbService<Race>, RaceDbService>();
         services.AddScoped<IBaseDbService<RaceResult>, RaceResultDbService>();
         services.AddScoped<IBaseDbService<RaceStartNumber>, RaceStartNumberDbService>();

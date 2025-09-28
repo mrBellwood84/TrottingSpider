@@ -2,7 +2,7 @@
 
 namespace Models.DbModels;
 
-public class RaceCourse
+public class Racecourse
 {
     [Required]
     public string Id { get; init; }

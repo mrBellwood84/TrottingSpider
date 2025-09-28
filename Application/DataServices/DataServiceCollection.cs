@@ -1,24 +1,42 @@
 ﻿using Application.DataServices.Interfaces;
+using Models.DbModels;
 
 namespace Application.DataServices;
 
-public class DataServiceCollection : IDataServiceCollection
+public class DataServiceCollection(
+    IBaseDataService<Competition> competitionDataService,
+    IBaseDataService<Driver> driverDataService,
+    IBaseDataService<DriverLicense> driverLicenseDataService,
+    IBaseDataService<Horse> horseDataService,
+    IBaseDataService<Race> raceDataService,
+    IBaseDataService<Racecourse> raceCourseDataService,
+    IBaseDataService<RaceResult> raceResultDataService,
+    IBaseDataService<RaceStartNumber> raceStartNumberDataService) : IDataServiceCollection
 {
-    public ICompetitionDataService Competition { get; }
-    public IRaceCourseDataService RaceCourse { get; }
-    
+    public IBaseDataService<Competition> CompetitionDataService { get; } = competitionDataService;
+    public IBaseDataService<Driver> DriverDataService { get; } = driverDataService;
+    public IBaseDataService<DriverLicense> DriverLicenseDataService { get; } = driverLicenseDataService;
+    public IBaseDataService<Horse> HorseDataService { get; } = horseDataService;
+    public IBaseDataService<Race> RaceDataService { get; } = raceDataService;
+    public IBaseDataService<Racecourse> RaceCourseDataService { get; } = raceCourseDataService;
+    public IBaseDataService<RaceResult> RaceResultDataService { get; } = raceResultDataService;
+    public IBaseDataService<RaceStartNumber> RaceStartNumberDataService { get; } = raceStartNumberDataService;
 
-    public DataServiceCollection(
-        ICompetitionDataService  competitionDataService, 
-        IRaceCourseDataService raceCourseDataService )
+    public async Task InitCaches()
     {
-        Competition = competitionDataService;
-        RaceCourse = raceCourseDataService;
-    }
-
-    public async Task InitializeCache()
-    {
-        await Competition.InitCache();
-        await RaceCourse.InitCache();
+        List<Task> tasks = new List<Task>
+        {
+            CompetitionDataService.InitCache(),
+            DriverDataService.InitCache(),
+            DriverLicenseDataService.InitCache(),
+            HorseDataService.InitCache(),
+            RaceDataService.InitCache(),
+            RaceCourseDataService.InitCache(),
+            RaceResultDataService.InitCache(),
+            RaceStartNumberDataService.InitCache()
+        };
+        
+        await Task.WhenAll(tasks);
+        AppLogger.LogNeutral("Data cache initialized.");
     }
 }
