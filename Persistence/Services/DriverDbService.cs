@@ -1,7 +1,7 @@
 ﻿using Models.DbModels;
 using Models.Settings;
 
-namespace Persistence.DbServices;
+namespace Persistence.Services;
 
 public class DriverDbService : BaseDbService<Driver>
 {

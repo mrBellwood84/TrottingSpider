@@ -8,7 +8,7 @@ namespace Application.CacheServices;
 /// <typeparam name="TModel"></typeparam>
 public class BaseCacheService<TModel> : IBaseCacheService<TModel>
 {
-    private readonly Dictionary<string, TModel> _cache = new Dictionary<string, TModel>();
+    private readonly Dictionary<string, TModel> _cache = [];
 
     /// <summary>
     /// Adds a single key value pair to cache dictionary
@@ -51,6 +51,7 @@ public class BaseCacheService<TModel> : IBaseCacheService<TModel>
     /// </summary>
     public bool CheckKeyExists(string key)
     {
+
         return _cache.ContainsKey(key);
     }
 

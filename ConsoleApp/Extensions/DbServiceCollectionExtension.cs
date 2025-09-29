@@ -2,6 +2,7 @@
 using Models.DbModels;
 using Persistence.DbServices;
 using Persistence.Interfaces;
+using Persistence.Services;
 
 namespace ConsoleApp.Extensions;
 

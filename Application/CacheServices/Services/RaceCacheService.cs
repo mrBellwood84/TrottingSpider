@@ -1,7 +1,6 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using Models.DbModels;
+﻿using Models.DbModels;
 
-namespace Application.CacheServices;
+namespace Application.CacheServices.Services;
 
 public class RaceCacheService : BaseCacheService<Race>
 {

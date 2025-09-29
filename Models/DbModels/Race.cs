@@ -6,5 +6,5 @@ public class Race
     public string CompetitionId { get; init; }
     public int RaceNumber { get; init; }
     public int Distance { get; init; }
-    public bool HasGambling { get; init; }
+    public bool HasGambling { get; init; } = false;
 }

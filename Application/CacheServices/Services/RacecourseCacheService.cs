@@ -1,6 +1,6 @@
 ﻿using Models.DbModels;
 
-namespace Application.CacheServices;
+namespace Application.CacheServices.Services;
 
 public class RacecourseCacheService : BaseCacheService<Racecourse>
 {

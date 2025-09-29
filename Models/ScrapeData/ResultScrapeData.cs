@@ -24,22 +24,22 @@ FromDirectSource: True
 
 public struct ResultScrapeData
 {
-    public string RaceCourse { get; set; }
-    public string Date { get; set; }
-    public string RaceNumber { get; set; }
-    public string StartNumber { get; set; }
-    public string DriverSourceId { get; set; }
-    public string HorseSourceId  { get; set; }
-    public string TrackNumber { get; set; }
-    public string Odds { get; set; }
-    public string Distance { get; set; }
-    public string ForeShoe { get; set; }
-    public string HindShoe { get; set; }
-    public string Cart { get; set; }
-    public string Place { get; set; }
-    public string Time { get; set; }
-    public string KmTime { get; set; }
-    public string RRemark  { get; set; }
-    public string GRemark  { get; set; }
-    public bool FromDirectSource { get; set; }
+    public string RaceCourse { get; init; }
+    public string Date { get; init; }
+    public string RaceNumber { get; init; }
+    public string StartNumber { get; init; }
+    public string DriverSourceId { get; init; }
+    public string HorseSourceId  { get; init; }
+    public string TrackNumber { get; init; }
+    public string Odds { get; init; }
+    public string Distance { get; init; }
+    public string ForeShoe { get; init; }
+    public string HindShoe { get; init; }
+    public string Cart { get; init; }
+    public string Place { get; init; }
+    public string Time { get; init; }
+    public string KmTime { get; init; }
+    public string RRemark  { get; init; }
+    public string GRemark  { get; init; }
+    public bool FromDirectSource { get; init; }
 }
