@@ -51,17 +51,7 @@ public class BaseCacheService<TModel> : IBaseCacheService<TModel>
     /// </summary>
     public bool CheckKeyExists(string key)
     {
-
         return _cache.ContainsKey(key);
-    }
-
-    /// <summary>
-    /// Create key from object and check if key exists
-    /// </summary>
-    public bool CheckKeyExists(TModel model)
-    {
-        var key = CreateKey(model);
-        return CheckKeyExists(key);
     }
 
     /// <summary>

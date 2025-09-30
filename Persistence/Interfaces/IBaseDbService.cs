@@ -2,7 +2,7 @@
 
 public interface IBaseDbService<TModel>
 {
-    Task<List<TModel>> GetAllAsync();
-    Task AddAsync(TModel model);
-    Task AddAsync(List<TModel> models);
+    public Task<List<TModel>> GetAllAsync();
+    public Task AddAsync(TModel model);
+    public Task AddAsync(List<TModel> models);
 }

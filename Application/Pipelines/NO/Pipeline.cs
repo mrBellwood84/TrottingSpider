@@ -37,7 +37,8 @@ public class Pipeline(
             var startlistResultStep = new StartlistResultsCollectionStep(browserOptions, calendarLinks);
             await startlistResultStep.RunAsync();
             */
-
+            
+            AppLogger.LogDev("Short list of actors set in pipline run method!!!");
             HashSet<string> mockDrivers = ["30040437"];
             HashSet<string> mockHorses = ["578001020185185"];
             

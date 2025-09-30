@@ -1,4 +1,5 @@
 ﻿using Application.DataServices.Interfaces;
+using Application.DataServices.Services;
 using Models.DbModels;
 
 namespace Application.DataServices;
@@ -11,7 +12,7 @@ public class DataServiceCollection(
     IBaseDataService<Race> raceDataService,
     IBaseDataService<Racecourse> raceCourseDataService,
     IBaseDataService<RaceResult> raceResultDataService,
-    IBaseDataService<RaceStartNumber> raceStartNumberDataService) : IDataServiceCollection
+    IRaceStartNumberDataService raceStartNumberDataService) : IDataServiceCollection
 {
     public IBaseDataService<Competition> CompetitionDataService { get; } = competitionDataService;
     public IBaseDataService<Driver> DriverDataService { get; } = driverDataService;
@@ -20,7 +21,7 @@ public class DataServiceCollection(
     public IBaseDataService<Race> RaceDataService { get; } = raceDataService;
     public IBaseDataService<Racecourse> RaceCourseDataService { get; } = raceCourseDataService;
     public IBaseDataService<RaceResult> RaceResultDataService { get; } = raceResultDataService;
-    public IBaseDataService<RaceStartNumber> RaceStartNumberDataService { get; } = raceStartNumberDataService;
+    public IRaceStartNumberDataService RaceStartNumberDataService { get; } = raceStartNumberDataService;
 
     public async Task InitCaches()
     {

@@ -1,4 +1,5 @@
-﻿using Models.DbModels;
+﻿using Application.DataServices.Services;
+using Models.DbModels;
 
 namespace Application.DataServices.Interfaces;
 
@@ -11,6 +12,6 @@ public interface IDataServiceCollection
     IBaseDataService<Race> RaceDataService { get; }
     IBaseDataService<Racecourse> RaceCourseDataService { get; }
     IBaseDataService<RaceResult> RaceResultDataService { get; }
-    IBaseDataService<RaceStartNumber> RaceStartNumberDataService { get; }
+    IRaceStartNumberDataService RaceStartNumberDataService { get; }
     Task InitCaches();
 }

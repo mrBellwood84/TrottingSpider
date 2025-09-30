@@ -30,11 +30,6 @@ public interface IBaseCacheService<TModel>
     bool CheckKeyExists(string key);
 
     /// <summary>
-    /// Create key from object and check if key exists
-    /// </summary>
-    bool CheckKeyExists(TModel model);
-
-    /// <summary>
     /// Get model stored in cache from  defined key
     /// </summary>
     TModel GetModel(string key);
