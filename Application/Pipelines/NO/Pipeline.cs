@@ -28,7 +28,6 @@ public class Pipeline(
         { 
             AppLogger.LogHeader($"Resolving {++count}/{iterations} - {option.Year} - {option.Month}");
             
-            /*
             // calendar step
             var calendarStep = new CalendarLinksCollectionStep(browserOptions, dataServices, option);
             var calendarLinks = await calendarStep.RunAsync();
@@ -36,14 +35,10 @@ public class Pipeline(
             // collect startlists and results data
             var startlistResultStep = new StartlistResultsCollectionStep(browserOptions, calendarLinks);
             await startlistResultStep.RunAsync();
-            */
             
-            AppLogger.LogDev("Short list of actors set in pipline run method!!!");
-            HashSet<string> mockDrivers = ["30040437"];
-            HashSet<string> mockHorses = ["578001020185185"];
             
             var driverAndHorsesStep = new DriverAndHorseStep(browserOptions, scraperSettings, dataServices,
-                mockDrivers, mockHorses);
+                startlistResultStep.Drivers, startlistResultStep.Horses);
             await driverAndHorsesStep.RunAsync();
 
             // resolve drivers and horses. 

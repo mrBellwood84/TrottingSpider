@@ -18,7 +18,7 @@ public class CalendarDataProcessor
 
     private string _parseRaceCourseName(string rawData)
     {
-        var split = rawData.Split("kl");
+        var split = rawData.Split("kl.");
         return split[0].Trim().ToUpper();
     }
     

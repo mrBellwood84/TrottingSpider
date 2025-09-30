@@ -15,6 +15,7 @@ public class StartlistResultsCollectionStep(
     
     public HashSet<string> Drivers = [];
     public HashSet<string> Horses = [];
+    private List<CalendarLinks> _calendarLinks = calendarLinks;
 
     public async Task RunAsync()
     {
@@ -22,8 +23,11 @@ public class StartlistResultsCollectionStep(
         var message = "Collecting startlists and results!";
         var options = CreateProgressBarOptions();
         
-        using (var bar = new ProgressBar(calendarLinks.Count, message, options))
-            foreach (var item in calendarLinks)
+        AppLogger.LogDev("Limiting calendar links!!!");
+        _calendarLinks = _calendarLinks[0..2];
+        
+        using (var bar = new ProgressBar(_calendarLinks.Count, message, options))
+            foreach (var item in _calendarLinks)
             {
                 var tasks = new List<Task>();
                 var startlistBot = new StartlistBotNo(browserOptions, item.StartlistLink);

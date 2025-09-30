@@ -9,8 +9,8 @@ public class RaceStartNumberDbService : BaseDbService<RaceStartNumber>
     {
         Query = "SELECT * FROM RaceStartNumber";
         InsertCommand = "INSERT INTO RaceStartNumber" +
-                        "(Id, RaceId, DriverId, HorseId, ProgramNumber, TrackNumber, Turn, Auto, ForeShoe, HindShoe, Cart, FromDirectSource)" +
-                        "VALUES (@Id, @RaceId,  @DriverId, @HorseId, @ProgramNumber, @TrackNumber, @Turn, " +
-                        "@Auto, @ForeShoe, @HindShoe, @Cart, @FromDirectSource)";
+                        "(Id, RaceId, DriverId, HorseId, ProgramNumber, TrackNumber, Distance, Turn, Auto, ForeShoe, HindShoe, Cart, FromDirectSource)" +
+                        "VALUES (@Id, @RaceId,  @DriverId, @HorseId, @ProgramNumber, @TrackNumber, @Distance, " +
+                        "@Turn, @Auto, @ForeShoe, @HindShoe, @Cart, @FromDirectSource)";
     }
 }

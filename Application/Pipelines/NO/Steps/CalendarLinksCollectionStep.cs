@@ -68,8 +68,7 @@ public class CalendarLinksCollectionStep(
         }
         
         // log and process data
-        AppLogger.LogNeutral($"Collected: {bot.DataCollected.Count}");
-        AppLogger.LogNeutral($"Processed for data collection: {_processedData.Count}");
+        AppLogger.LogNeutral($"Start number and result links collected: {_processedData.Count}");
         return _processedData;
     }
 }
