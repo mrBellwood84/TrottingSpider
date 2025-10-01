@@ -19,12 +19,12 @@ public class StartlistResultsCollectionStep(
 
     public async Task RunAsync()
     {
+        // skip this function if no links are collected
+        if (_calendarLinks.Count == 0) return;
+        
         // resolve progressbar params
         var message = "Collecting startlists and results!";
         var options = CreateProgressBarOptions();
-        
-        AppLogger.LogDev("Limiting calendar links!!!");
-        _calendarLinks = _calendarLinks[0..2];
         
         using (var bar = new ProgressBar(_calendarLinks.Count, message, options))
             foreach (var item in _calendarLinks)

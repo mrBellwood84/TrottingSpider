@@ -1,4 +1,5 @@
 ﻿using Application.DataServices.Interfaces;
+using Application.Pipelines.NO.Collection.DriverAndHorsesStep;
 using Models.DbModels;
 using Models.DbModels.Updates;
 using Models.ScrapeData;
@@ -8,18 +9,6 @@ using Scraping.Spider.NO;
 using ShellProgressBar;
 
 namespace Application.Pipelines.NO.Steps;
-
-internal enum CreateUpdateOptions
-{
-    Create,
-    Update
-}
-
-internal struct CreateUpdateResult
-{
-    public RaceStartNumber StartNumberData { get; init; }
-    public CreateUpdateOptions Option { get; init; }
-}
 
 internal struct UpdateReport
 {
@@ -70,7 +59,6 @@ public class DriverAndHorseStep(
     private readonly HashSet<string> _horseBuffer = [];
     
     private readonly List<Driver> _newDrivers = [];
-    private readonly List<DriverLicense> _newDriverLicenses = [];
     private readonly List<Horse> _newHorses = [];
 
     private readonly List<ResultScrapeData> _driverResultsScrapeData = [];
@@ -85,22 +73,15 @@ public class DriverAndHorseStep(
     
     public async Task RunAsync()
     {
-        AppLogger.LogDev("initializing driver and horses are limited!!!");
-        int d_limit = 0;
-        int h_limit = 0;
-        int limit = 2;
-            
         // init buffers, exclude existing drivers and horses
         foreach (var d in drivers)
         { 
             if (dataServices.DriverDataService.CheckExists(d)) continue; 
-            if(++d_limit > limit) break;
             _driverBuffer.Add(d); 
         }
         foreach (var h in horses)
         {   
             if (dataServices.HorseDataService.CheckExists(h)) continue;
-            if (++h_limit > limit) break;
             _horseBuffer.Add(h);
         }
 
@@ -128,10 +109,6 @@ public class DriverAndHorseStep(
             
             _updateReport.Report();
         }
-        
-        // start loops here
-        
-        // remember to clear buffer!!!
     }
 
     /// <summary>
@@ -139,20 +116,14 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task SaveDriverHorseData()
     {
-        if (_newDriverLicenses.Count > 0)
-        {
-            _updateReport.NewDriverLicenses++;
-            await dataServices.DriverLicenseDataService.AddAsync(_newDriverLicenses);
-        }
-        
         _updateReport.NewDrivers += _newDrivers.Count;
         _updateReport.NewHorses += _newHorses.Count;
 
-        var driverChunks = _newDrivers.Chunk(10).ToList();
-        var horseChunks = _newHorses.Chunk(10).ToList();
+        var driverChunks = _newDrivers.Chunk(200).ToList();
+        var horseChunks = _newHorses.Chunk(200).ToList();
         
         var count = driverChunks.Count + horseChunks.Count;
-        var message = "Saving new drivers and hores to entity";
+        var message = "Saving new drivers and horses to entity";
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(count, message, options);
         
@@ -168,7 +139,6 @@ public class DriverAndHorseStep(
             bar.Tick();
         }
         
-        _newDriverLicenses.Clear();
         _newDrivers.Clear();
         _newHorses.Clear();
     }
@@ -184,10 +154,30 @@ public class DriverAndHorseStep(
         var message = "Collecting Driver data";
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(_driverBuffer.Count, message, options);
+        
+        using var semaphore = new SemaphoreSlim(4);
+        var tasks = new List<Task>();
+        
         foreach (var d in _driverBuffer)
         {
-            await CollectDriverData(d);
+            tasks.Add(RunProcessDriverBufferTask(d, semaphore, bar));
+        }
+        await Task.WhenAll(tasks);
+    }
+    /// <summary>
+    /// Run CollectDriverData as semaphore task
+    /// </summary>
+    private async Task RunProcessDriverBufferTask(string sourceId, SemaphoreSlim semaphore, ProgressBar bar)
+    {
+        await semaphore.WaitAsync();
+        try
+        {
+            await CollectDriverData(sourceId);
             bar.Tick();
+        }
+        finally
+        {
+            semaphore.Release();
         }
     }
     /// <summary>
@@ -201,11 +191,29 @@ public class DriverAndHorseStep(
         var dl = dataServices.DriverLicenseDataService.GetFullCache();
         var processor = new ProcessDriverScrapeData(dl);
         var newDriver = processor.Process(bot.DriverDataCollected);
-        _newDrivers.Add(newDriver);
         _driverResultsScrapeData.AddRange(bot.RaceDataCollected);
+        
         if (processor.NewDriverLicense != null)
-            _newDriverLicenses.Add(processor.NewDriverLicense);
-    }    
+        {
+            var dlExists = dataServices.DriverLicenseDataService.CheckExists(processor.NewDriverLicense.Code);
+            if (!dlExists)
+            {
+                await dataServices.DriverLicenseDataService.AddAsync(processor.NewDriverLicense);
+                _updateReport.NewDriverLicenses++;
+            }
+
+            if (dlExists)
+            {
+                var dlId = dataServices.DriverDataService.GetModel(processor.NewDriverLicense.Code).Id;
+                newDriver.DriverLicenseId = dlId;
+            }
+        }
+        
+        _newDrivers.Add(newDriver);
+
+    }
+    
+    
     /// <summary>
     /// Iterate horse buffer to gather data. Will clear buffer when complete.
     /// </summary>
@@ -216,10 +224,31 @@ public class DriverAndHorseStep(
         var message = "Collecting Horse data";
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(_horseBuffer.Count, message, options);
+        
+        using var semaphore = new SemaphoreSlim(4);
+        var tasks = new List<Task>();
+        
         foreach (var h in _horseBuffer)
         {
-            await CollectHorseData(h);
+            tasks.Add(RunProcessHorseBufferTask(h, semaphore, bar));
+        }
+        
+        await Task.WhenAll(tasks); 
+    }
+    /// <summary>
+    /// Run CollectHorseData as semaphore task 
+    /// </summary>
+    private async Task RunProcessHorseBufferTask(string sourceId, SemaphoreSlim semaphore, ProgressBar bar)
+    {
+        await semaphore.WaitAsync();
+        try
+        {
+            await CollectHorseData(sourceId);
             bar.Tick();
+        }
+        finally
+        {
+            semaphore.Release();
         }
     }
     /// <summary>
@@ -236,6 +265,7 @@ public class DriverAndHorseStep(
         _horseResultsScrapeData.AddRange(bot.RaceDataCollected);
     }
 
+    
     /// <summary>
     /// Iterate collected driver data for processing. Adds to create and update lists
     /// </summary>
@@ -460,20 +490,14 @@ public class DriverAndHorseStep(
         _driverBuffer.Clear();  
         _horseBuffer.Clear();
         
-        AppLogger.LogDev("Cutof added to resolve new horse and driver buffers");
-        int hb_cutof = 0;
-        int dr_cutof = 0;
-        int limit = 2;
         foreach (var item in _driverResultsScrapeData)
         {
-            if (++hb_cutof > limit) break;
             var exists = dataServices.HorseDataService.CheckExists(item.HorseSourceId);
             if (!exists) _horseBuffer.Add(item.HorseSourceId);
         }
 
         foreach (var item in _horseResultsScrapeData)
         {
-            if (++dr_cutof > limit) break;
             var exists = dataServices.DriverDataService.CheckExists(item.DriverSourceId);
             if (!exists) _driverBuffer.Add(item.DriverSourceId);
         }
