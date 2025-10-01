@@ -19,7 +19,7 @@ public static class DataServiceCollectionExtension
         services.AddScoped<IBaseDataService<Horse>, HorseDataService>();
         services.AddScoped<IBaseDataService<Race>, RaceDataService>();
         services.AddScoped<IBaseDataService<Racecourse>, RacecourseDataService>();
-        services.AddScoped<IBaseDataService<RaceResult>, RaceResultDataService>();
+        services.AddScoped<IRaceResultDataService, RaceResultDataService>();
         services.AddScoped<IRaceStartNumberDataService, RaceStartNumberDataService>();
         
         // add collection

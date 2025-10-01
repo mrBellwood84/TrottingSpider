@@ -22,7 +22,9 @@ public static class DbServiceCollectionExtension
         services.AddScoped<IBaseDbService<RaceStartNumber>, RaceStartNumberDbService>();
         
         // add extensions for db services
+        services.AddScoped<IRaceResultExtension, RaceResultExtension>();
         services.AddScoped<IRaceStartNumberDbServiceExtension, RaceStartNumberDbServiceExtension>();
+        
         
         return services;
     }

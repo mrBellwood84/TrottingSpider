@@ -15,4 +15,5 @@ public class RaceStartNumberDataService(
 {
     public async Task UpdateDriverAsync(RaceStartNumberUpdateDriver data) =>  await dbServiceExtension.UpdateDriverAsync(data);
     public async Task UpdateHorseAsync(RaceStartNumberUpdateHorse data) =>  await dbServiceExtension.UpdateHorseAsync(data);
+    public async Task UpdateAsync(RaceStartNumberUpdate data) =>  await dbServiceExtension.UpdateAsync(data);
 }

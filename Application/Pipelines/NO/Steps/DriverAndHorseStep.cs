@@ -10,44 +10,6 @@ using ShellProgressBar;
 
 namespace Application.Pipelines.NO.Steps;
 
-internal struct UpdateReport
-{
-    public UpdateReport() { }
-    public int NewDrivers { get; set; } = 0;
-    public int NewHorses { get; set; } = 0;
-    public int NewDriverLicenses { get; set; } = 0;
-    public int NewRacecourses { get; set; } = 0;
-    public int NewCompetition { get; set; } = 0;
-    public int NewRaces { get; set; } = 0;
-    public int StartnumberCreated { get; set; } = 0;
-    public int StartnumberUpdatedDriver { get; set; } = 0;
-    public int StartnumberUpdatedHorses { get; set; } = 0;
-
-    public void Report()
-    {
-        Console.WriteLine();
-        if (NewDrivers > 0) AppLogger.LogPositive($"Drivers created: {NewDrivers}");
-        if (NewHorses > 0) AppLogger.LogPositive($"Horses created: {NewHorses}");
-        if (NewDriverLicenses > 0) AppLogger.LogPositive($"Driver licenses created: {NewDriverLicenses}");
-        if (NewRacecourses > 0) AppLogger.LogPositive($"Races created: {NewRacecourses}");
-        if (NewCompetition > 0) AppLogger.LogPositive($"Competition created: {NewCompetition}");
-        if (NewRaces > 0) AppLogger.LogPositive($"Races created: {NewRaces}");
-        if (StartnumberCreated > 0) AppLogger.LogPositive($"New start numbers created: {StartnumberCreated}");
-        if (StartnumberUpdatedDriver > 0) AppLogger.LogPositive($"Drivers results updated: {StartnumberUpdatedDriver}");
-        if (StartnumberUpdatedHorses > 0) AppLogger.LogPositive($"Horses results updated: {StartnumberUpdatedHorses}");
-        
-        NewDrivers = 0;
-        NewHorses = 0;
-        NewDriverLicenses = 0;
-        NewRacecourses = 0;
-        NewCompetition = 0;
-        NewRaces = 0;
-        StartnumberCreated = 0;
-        StartnumberUpdatedDriver = 0;
-        StartnumberUpdatedHorses = 0;
-    }
-}
-
 public class DriverAndHorseStep(
     BrowserOptions browserOptions,
     ScraperSettings scraperSettings,
@@ -69,14 +31,15 @@ public class DriverAndHorseStep(
     private readonly List<RaceStartNumber> _startNumbersUpdateHorse = [];
     private readonly List<RaceResult> _raceResultsToCreate = [];
     
-    private UpdateReport _updateReport = new UpdateReport();
+    private DriverAndHorseStateDataReport _dataReport = new DriverAndHorseStateDataReport();
     
     public async Task RunAsync()
     {
+        
         // init buffers, exclude existing drivers and horses
         foreach (var d in drivers)
         { 
-            if (dataServices.DriverDataService.CheckExists(d)) continue; 
+            if (dataServices.DriverDataService.CheckExists(d)) continue;
             _driverBuffer.Add(d); 
         }
         foreach (var h in horses)
@@ -107,7 +70,7 @@ public class DriverAndHorseStep(
             // find unregistered drivers and horses to add 
             ResovleNewBuffers();
             
-            _updateReport.Report();
+            _dataReport.Report();
         }
     }
 
@@ -116,8 +79,8 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task SaveDriverHorseData()
     {
-        _updateReport.NewDrivers += _newDrivers.Count;
-        _updateReport.NewHorses += _newHorses.Count;
+        _dataReport.NewDrivers += _newDrivers.Count;
+        _dataReport.NewHorses += _newHorses.Count;
 
         var driverChunks = _newDrivers.Chunk(200).ToList();
         var horseChunks = _newHorses.Chunk(200).ToList();
@@ -155,7 +118,7 @@ public class DriverAndHorseStep(
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(_driverBuffer.Count, message, options);
         
-        using var semaphore = new SemaphoreSlim(4);
+        using var semaphore = new SemaphoreSlim(3);
         var tasks = new List<Task>();
         
         foreach (var d in _driverBuffer)
@@ -169,11 +132,23 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task RunProcessDriverBufferTask(string sourceId, SemaphoreSlim semaphore, ProgressBar bar)
     {
+        var complete = false;
         await semaphore.WaitAsync();
         try
         {
-            await CollectDriverData(sourceId);
-            bar.Tick();
+            while (!complete)
+            {
+                try
+                {
+                    await CollectDriverData(sourceId);
+                    bar.Tick();
+                    complete = true;
+                }
+                catch (TimeoutException)
+                {
+                    AppLogger.LogNegative($"Error occured when collecting data for driver {sourceId}");
+                }
+            }
         }
         finally
         {
@@ -199,7 +174,7 @@ public class DriverAndHorseStep(
             if (!dlExists)
             {
                 await dataServices.DriverLicenseDataService.AddAsync(processor.NewDriverLicense);
-                _updateReport.NewDriverLicenses++;
+                _dataReport.NewDriverLicenses++;
             }
 
             if (dlExists)
@@ -225,7 +200,7 @@ public class DriverAndHorseStep(
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(_horseBuffer.Count, message, options);
         
-        using var semaphore = new SemaphoreSlim(4);
+        using var semaphore = new SemaphoreSlim(3);
         var tasks = new List<Task>();
         
         foreach (var h in _horseBuffer)
@@ -240,11 +215,23 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task RunProcessHorseBufferTask(string sourceId, SemaphoreSlim semaphore, ProgressBar bar)
     {
+        var complete = false;
         await semaphore.WaitAsync();
         try
         {
-            await CollectHorseData(sourceId);
-            bar.Tick();
+            while (!complete)
+            {
+                try
+                {
+                    await CollectHorseData(sourceId);
+                    bar.Tick();
+                    complete = true;
+                }
+                catch (TimeoutException)
+                {
+                    AppLogger.LogNegative($"Error occured when collecting data for horse {sourceId}");
+                }
+            }
         }
         finally
         {
@@ -286,11 +273,11 @@ public class DriverAndHorseStep(
             {
                 case CreateUpdateOptions.Create:
                     _startNumbersToCreate.Add(data.StartNumberData);
-                    _updateReport.StartnumberCreated++;
+                    _dataReport.StartnumberCreated++;
                     break;
                 case CreateUpdateOptions.Update:
                     _startNumbersUpdateDriver.Add(data.StartNumberData);
-                    _updateReport.StartnumberUpdatedDriver++;
+                    _dataReport.StartnumberUpdatedDriver++;
                     break;
             }
             bar.Tick();
@@ -316,11 +303,11 @@ public class DriverAndHorseStep(
             {
                 case CreateUpdateOptions.Create:
                     _startNumbersToCreate.Add(data.StartNumberData);
-                    _updateReport.StartnumberCreated++;
+                    _dataReport.StartnumberCreated++;
                     break;
                 case CreateUpdateOptions.Update:
                     _startNumbersUpdateHorse.Add(data.StartNumberData);
-                    _updateReport.StartnumberUpdatedHorses++;
+                    _dataReport.StartnumberUpdatedHorses++;
                     break;
             }
             bar.Tick();
@@ -343,7 +330,7 @@ public class DriverAndHorseStep(
                 Id = Guid.NewGuid().ToString(),
                 Name = racecourseNorm,
             });
-            _updateReport.NewRacecourses++;
+            _dataReport.NewRacecourses++;
         }
         var racecourseId = dataServices.RaceCourseDataService.GetModel(racecourseNorm).Id;
         
@@ -360,7 +347,7 @@ public class DriverAndHorseStep(
                 RaceCourseId = racecourseId,
                 Date = date
             });
-            _updateReport.NewCompetition++;
+            _dataReport.NewCompetition++;
         }
         var competitionId = dataServices.CompetitionDataService.GetModel(competitionKey).Id;
         
@@ -378,7 +365,7 @@ public class DriverAndHorseStep(
                 RaceNumber = raceNumber,
                 Distance = int.TryParse(resultData.Distance, out var d1) ? d1 : -1,
             });
-            _updateReport.NewRaces++;
+            _dataReport.NewRaces++;
         }
         var raceId = dataServices.RaceDataService.GetModel(raceKey).Id;
 
@@ -430,6 +417,7 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task StoreRaceData()
     {
+        /*
         var startNumberChunks = _startNumbersToCreate.Chunk(100).ToList();
         var raceResultChunks = _raceResultsToCreate.Chunk(100).ToList();
 
@@ -437,22 +425,28 @@ public class DriverAndHorseStep(
                     + raceResultChunks.Count
                     + _startNumbersUpdateDriver.Count
                     + _startNumbersUpdateHorse.Count;
+        */
+        var count = _startNumbersToCreate.Count
+                    + _raceResultsToCreate.Count
+                    + _startNumbersUpdateDriver.Count
+                    + _startNumbersUpdateHorse.Count;
+        
 
         var message = "Create and update collected data";
         var options = CreateProgressBarOptions();
         
         using var bar = new ProgressBar(count, message, options);
 
-        foreach (var chunk in startNumberChunks)
+        foreach (var item in _startNumbersToCreate)
         {
-            await dataServices.RaceStartNumberDataService.AddAsync(chunk.ToList());
+            await dataServices.RaceStartNumberDataService.AddAsync(item);
             bar.Tick();
         }
 
 
-        foreach (var chunk in raceResultChunks)
+        foreach (var item in _raceResultsToCreate)
         {
-            await dataServices.RaceResultDataService.AddAsync(chunk.ToList());
+            await dataServices.RaceResultDataService.AddAsync(item);
             bar.Tick();
         }
 
@@ -530,7 +524,6 @@ public class DriverAndHorseStep(
         {
             ForegroundColor = ConsoleColor.DarkCyan,
             BackgroundColor = ConsoleColor.White,
-            ProgressBarOnBottom = true,
             ForegroundColorDone = ConsoleColor.DarkCyan,
         };
     }

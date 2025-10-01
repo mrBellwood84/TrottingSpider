@@ -36,10 +36,17 @@ public class Pipeline(
             var startlistResultStep = new StartlistResultsCollectionStep(browserOptions, calendarLinks);
             await startlistResultStep.RunAsync();
             
-            
+            /*
             var driverAndHorsesStep = new DriverAndHorseStep(browserOptions, scraperSettings, dataServices,
                 startlistResultStep.Drivers, startlistResultStep.Horses);
             await driverAndHorsesStep.RunAsync();
+            */
+            
+            var updateStep = new UpdateStartlistAndResultsStep(
+                dataServices, 
+                startlistResultStep.StartlistDataCollected, 
+                startlistResultStep.ResultDataCollected);
+            await updateStep.RunAsync();
 
             // resolve drivers and horses. 
             // keep updating driver and horse buffer until they are both depleted

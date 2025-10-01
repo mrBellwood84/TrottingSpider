@@ -6,7 +6,6 @@ public class RaceStartNumber
     public string RaceId { get; init; }
     public string DriverId { get; set; }
     public string HorseId { get; set; }
-    
     public int ProgramNumber  { get; init; }
     public int TrackNumber  { get; init; }
     public int Distance { get; init; }
@@ -15,5 +14,7 @@ public class RaceStartNumber
     public bool? ForeShoe { get; init; }
     public bool? HindShoe { get; init; }
     public string Cart { get; init; }
+    public bool hasGambling  { get; init; } 
     public bool FromDirectSource { get; init; }
+    
 }

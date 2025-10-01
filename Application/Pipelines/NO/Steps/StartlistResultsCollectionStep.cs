@@ -10,11 +10,11 @@ public class StartlistResultsCollectionStep(
     BrowserOptions browserOptions,
     List<CalendarLinks> calendarLinks)
 {
-    public List<StartlistScrapeData> StartlistDataCollected = [];
-    public List<ResultScrapeData> ResultDataCollected = [];
+    public readonly List<StartlistScrapeData> StartlistDataCollected = [];
+    public readonly List<ResultScrapeData> ResultDataCollected = [];
     
-    public HashSet<string> Drivers = [];
-    public HashSet<string> Horses = [];
+    public readonly HashSet<string> Drivers = [];
+    public readonly HashSet<string> Horses = [];
     private List<CalendarLinks> _calendarLinks = calendarLinks;
 
     public async Task RunAsync()
@@ -65,7 +65,6 @@ public class StartlistResultsCollectionStep(
         {
             ForegroundColor = ConsoleColor.DarkCyan,
             BackgroundColor = ConsoleColor.White,
-            ProgressBarOnBottom = true,
             ForegroundColorDone = ConsoleColor.DarkCyan,
         };
     }

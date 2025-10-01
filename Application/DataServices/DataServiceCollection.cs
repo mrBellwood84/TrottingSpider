@@ -11,7 +11,7 @@ public class DataServiceCollection(
     IBaseDataService<Horse> horseDataService,
     IBaseDataService<Race> raceDataService,
     IBaseDataService<Racecourse> raceCourseDataService,
-    IBaseDataService<RaceResult> raceResultDataService,
+    IRaceResultDataService raceResultDataService,
     IRaceStartNumberDataService raceStartNumberDataService) : IDataServiceCollection
 {
     public IBaseDataService<Competition> CompetitionDataService { get; } = competitionDataService;
@@ -20,7 +20,7 @@ public class DataServiceCollection(
     public IBaseDataService<Horse> HorseDataService { get; } = horseDataService;
     public IBaseDataService<Race> RaceDataService { get; } = raceDataService;
     public IBaseDataService<Racecourse> RaceCourseDataService { get; } = raceCourseDataService;
-    public IBaseDataService<RaceResult> RaceResultDataService { get; } = raceResultDataService;
+    public IRaceResultDataService RaceResultDataService { get; } = raceResultDataService;
     public IRaceStartNumberDataService RaceStartNumberDataService { get; } = raceStartNumberDataService;
 
     public async Task InitCaches()

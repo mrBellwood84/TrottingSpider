@@ -11,7 +11,7 @@ public interface IDataServiceCollection
     IBaseDataService<Horse> HorseDataService { get; }
     IBaseDataService<Race> RaceDataService { get; }
     IBaseDataService<Racecourse> RaceCourseDataService { get; }
-    IBaseDataService<RaceResult> RaceResultDataService { get; }
+    IRaceResultDataService RaceResultDataService { get; }
     IRaceStartNumberDataService RaceStartNumberDataService { get; }
     Task InitCaches();
 }
