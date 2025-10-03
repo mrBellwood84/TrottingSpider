@@ -64,8 +64,6 @@ public class DriverAndHorseStep(
             ResolveExtractData();
             
             _dataReport.Report();
-            _driverExtract.Clear();
-            _horseExtract.Clear();
         }
     }
 
