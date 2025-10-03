@@ -14,7 +14,7 @@ public class RaceStartNumber
     public bool? ForeShoe { get; init; }
     public bool? HindShoe { get; init; }
     public string Cart { get; init; }
-    public bool hasGambling  { get; init; } 
+    public bool HasGambling  { get; init; } 
     public bool FromDirectSource { get; init; }
     
 }

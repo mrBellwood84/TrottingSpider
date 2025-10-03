@@ -43,7 +43,6 @@ public class CalendarLinksCollectionStep(
                     Id = Guid.NewGuid().ToString(),
                     Name = processed.RaceCourseName,
                 });
-                AppLogger.LogPositive($"New race course added: {processed.RaceCourseName}");
             }
             
             // get racecourse item and create a valid competition dict key

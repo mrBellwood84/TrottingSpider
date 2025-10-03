@@ -12,11 +12,10 @@ public static class DataServiceCollectionExtension
     public static IServiceCollection AddDataServices(this IServiceCollection services)
     {
         // add individual services
-
         services.AddScoped<IBaseDataService<Competition>, CompetitionDataService>();
-        services.AddScoped<IBaseDataService<Driver>, DriverDataService>();
+        services.AddScoped<IDriverDataService, DriverDataService>();
         services.AddScoped<IDriverLicenseDataService , DriverLicenseDataService>();
-        services.AddScoped<IBaseDataService<Horse>, HorseDataService>();
+        services.AddScoped<IHorseDataService, HorseDataService>();
         services.AddScoped<IBaseDataService<Race>, RaceDataService>();
         services.AddScoped<IBaseDataService<Racecourse>, RacecourseDataService>();
         services.AddScoped<IRaceResultDataService, RaceResultDataService>();

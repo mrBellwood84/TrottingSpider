@@ -9,6 +9,5 @@ public interface IDriverLicenseDataService
     bool CheckExists(string key);
     DriverLicense GetModel(string key);
     Task AddAsync(DriverLicense model);
-    Task AddAsync(List<DriverLicense> models);
 
 }

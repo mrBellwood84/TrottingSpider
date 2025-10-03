@@ -2,6 +2,6 @@
 
 public class RaceStartNumberUpdateDriver
 {
-    public string Id { get; init; }
-    public string DriverId { get; init; }
+    public string Id { get; set; }
+    public string DriverId { get; set; }
 }

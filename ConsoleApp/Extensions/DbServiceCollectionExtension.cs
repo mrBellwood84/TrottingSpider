@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Models.DbModels;
-using Persistence.DbServices;
 using Persistence.Interfaces;
 using Persistence.Services;
 using Persistence.Services.Extensions;
@@ -21,10 +20,11 @@ public static class DbServiceCollectionExtension
         services.AddScoped<IBaseDbService<RaceResult>, RaceResultDbService>();
         services.AddScoped<IBaseDbService<RaceStartNumber>, RaceStartNumberDbService>();
         
-        // add extensions for db services
-        services.AddScoped<IRaceResultExtension, RaceResultExtension>();
+        // add scoped db service extensions
+        services.AddScoped<IDriverDbServiceExtension, DriverDbServiceExtension>();
+        services.AddScoped<IHorseDbServiceExtension, HorseDbServiceExtension>();
+        services.AddScoped<IRaceResultsDbServiceExtension, RaceResultsDbServiceExtension>();
         services.AddScoped<IRaceStartNumberDbServiceExtension, RaceStartNumberDbServiceExtension>();
-        
         
         return services;
     }

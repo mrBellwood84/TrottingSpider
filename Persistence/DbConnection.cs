@@ -9,6 +9,8 @@ public class DbConnection(DbConnectionStrings dbConnectionStrings)
 
     protected MySqlConnection CreateConnection()
     {
-        return new MySqlConnection(_connectionString);
+        var connection = new MySqlConnection(_connectionString);
+        connection.Open();
+        return connection;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Application.CacheServices.Interfaces;
+using Application.DataServices.Interfaces;
 using Models.DbModels;
 using Models.DbModels.Updates;
 using Persistence.Interfaces;
@@ -7,9 +8,16 @@ namespace Application.DataServices.Services;
 
 public class RaceResultDataService(
     IBaseDbService<RaceResult> dbService,
-    IRaceResultExtension raceResultExtension,
+    IRaceResultsDbServiceExtension raceResultDbServiceExtension,
     IBaseCacheService<RaceResult> cacheService)
     : BaseDataService<RaceResult>(dbService, cacheService), IRaceResultDataService
 {
-    public async Task UpdateAsync(RaceResultUpdate data) => await raceResultExtension.UpdateAsync(data);
+    private readonly IBaseCacheService<RaceResult> _cacheService = cacheService;
+
+    public async Task AddBulkAsync(List<RaceResult> data)
+    {
+        await raceResultDbServiceExtension.InsertBulkAsync(data);
+        _cacheService.AddRange(data);
+    }
+    public async Task UpdateAsync(RaceResultUpdate data) => await raceResultDbServiceExtension.UpdateAsync(data);
 }

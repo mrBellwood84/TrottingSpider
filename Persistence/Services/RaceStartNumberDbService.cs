@@ -1,7 +1,7 @@
 ﻿using Models.DbModels;
 using Models.Settings;
 
-namespace Persistence.DbServices;
+namespace Persistence.Services;
 
 public class RaceStartNumberDbService : BaseDbService<RaceStartNumber>
 {
@@ -9,8 +9,9 @@ public class RaceStartNumberDbService : BaseDbService<RaceStartNumber>
     {
         Query = "SELECT * FROM RaceStartNumber";
         InsertCommand = "INSERT INTO RaceStartNumber" +
-                        "(Id, RaceId, DriverId, HorseId, ProgramNumber, TrackNumber, Distance, Turn, Auto, ForeShoe, HindShoe, Cart, FromDirectSource)" +
+                        "(Id, RaceId, DriverId, HorseId, ProgramNumber, TrackNumber, " +
+                        "Distance, Turn, Auto, ForeShoe, HindShoe, Cart, FromDirectSource)" +
                         "VALUES (@Id, @RaceId,  @DriverId, @HorseId, @ProgramNumber, @TrackNumber, @Distance, " +
                         "@Turn, @Auto, @ForeShoe, @HindShoe, @Cart, @FromDirectSource)";
     }
-}
+} 

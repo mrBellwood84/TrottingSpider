@@ -14,11 +14,15 @@ public class DriverAndHorseStep(
     BrowserOptions browserOptions,
     ScraperSettings scraperSettings,
     IDataServiceCollection dataServices,
-    HashSet<string> drivers,
-    HashSet<string> horses)
+    HashSet<string> driverBuffer,
+    HashSet<string> horseBuffer)
 {
-    private readonly HashSet<string> _driverBuffer = [];
-    private readonly HashSet<string> _horseBuffer = [];
+
+    private const int DriverBatchSize = 2;
+    private const int HorseBatchSize = 6;
+    
+    private readonly HashSet<string> _driverExtract = [];
+    private readonly HashSet<string> _horseExtract = [];
     
     private readonly List<Driver> _newDrivers = [];
     private readonly List<Horse> _newHorses = [];
@@ -27,31 +31,21 @@ public class DriverAndHorseStep(
     private readonly List<ResultScrapeData> _horseResultsScrapeData = [];
     
     private readonly List<RaceStartNumber> _startNumbersToCreate = [];
-    private readonly List<RaceStartNumber> _startNumbersUpdateDriver = [];
-    private readonly List<RaceStartNumber> _startNumbersUpdateHorse = [];
+    private readonly List<RaceStartNumberUpdateDriver> _startNumbersUpdateDriver = [];
+    private readonly List<RaceStartNumberUpdateHorse> _startNumbersUpdateHorse = [];
     private readonly List<RaceResult> _raceResultsToCreate = [];
     
     private DriverAndHorseStateDataReport _dataReport = new DriverAndHorseStateDataReport();
     
     public async Task RunAsync()
     {
+        ResolveExtractData();
         
-        // init buffers, exclude existing drivers and horses
-        foreach (var d in drivers)
-        { 
-            if (dataServices.DriverDataService.CheckExists(d)) continue;
-            _driverBuffer.Add(d); 
-        }
-        foreach (var h in horses)
-        {   
-            if (dataServices.HorseDataService.CheckExists(h)) continue;
-            _horseBuffer.Add(h);
-        }
 
         // clear driver and horse buffer here
-        while (_driverBuffer.Count > 0 || _horseBuffer.Count > 0)
+        while (_driverExtract.Count > 0 || _horseExtract.Count > 0)
         {
-            AppLogger.LogSubheader($"Resolving drivers : ({_driverBuffer.Count}) | horses: ({_horseBuffer.Count})");
+            AppLogger.LogSubheader($"Resolving drivers : ({_driverExtract.Count} / {driverBuffer.Count}) | horses: ({_horseExtract.Count} / {horseBuffer.Count})");
             
             // process data buffers
             await ProcessDriverBuffer();
@@ -68,9 +62,11 @@ public class DriverAndHorseStep(
             await StoreRaceData();
 
             // find unregistered drivers and horses to add 
-            ResovleNewBuffers();
+            ResolveExtractData();
             
             _dataReport.Report();
+            _driverExtract.Clear();
+            _horseExtract.Clear();
         }
     }
 
@@ -82,23 +78,20 @@ public class DriverAndHorseStep(
         _dataReport.NewDrivers += _newDrivers.Count;
         _dataReport.NewHorses += _newHorses.Count;
 
-        var driverChunks = _newDrivers.Chunk(200).ToList();
-        var horseChunks = _newHorses.Chunk(200).ToList();
-        
-        var count = driverChunks.Count + horseChunks.Count;
+        var count = _newDrivers.Count + _newHorses.Count;
         var message = "Saving new drivers and horses to entity";
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(count, message, options);
         
-        foreach (var chunk in driverChunks)
+        foreach (var d in _newDrivers)
         {
-            await dataServices.DriverDataService.AddAsync(chunk.ToList());
+            await dataServices.DriverDataService.AddAsync(d);
             bar.Tick();
         }
 
-        foreach (var chunk in horseChunks)
+        foreach (var h in _newHorses)
         {
-            await dataServices.HorseDataService.AddAsync(chunk.ToList());
+            await dataServices.HorseDataService.AddAsync(h);
             bar.Tick();
         }
         
@@ -112,16 +105,16 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task ProcessDriverBuffer()
     {
-        if (_driverBuffer.Count == 0) return;
+        if (_driverExtract.Count == 0) return;
         
         var message = "Collecting Driver data";
         var options = CreateProgressBarOptions();
-        using var bar = new ProgressBar(_driverBuffer.Count, message, options);
+        using var bar = new ProgressBar(_driverExtract.Count, message, options);
         
-        using var semaphore = new SemaphoreSlim(3);
+        using var semaphore = new SemaphoreSlim(DriverBatchSize);
         var tasks = new List<Task>();
         
-        foreach (var d in _driverBuffer)
+        foreach (var d in _driverExtract)
         {
             tasks.Add(RunProcessDriverBufferTask(d, semaphore, bar));
         }
@@ -162,7 +155,11 @@ public class DriverAndHorseStep(
     {
         var bot = new DriverBotNo(browserOptions, scraperSettings, driverSourceId);
         await bot.RunBrowser(bot.Execute);
+        _driverResultsScrapeData.AddRange(bot.RaceDataCollected);
 
+        var driverFromDb = await dataServices.DriverDataService.GetDriverFromDb(bot.DriverDataCollected.SourceId);
+        if (driverFromDb.Count > 0) return;  
+        
         var dl = dataServices.DriverLicenseDataService.GetFullCache();
         var processor = new ProcessDriverScrapeData(dl);
         var newDriver = processor.Process(bot.DriverDataCollected);
@@ -171,19 +168,20 @@ public class DriverAndHorseStep(
         if (processor.NewDriverLicense != null)
         {
             var dlExists = dataServices.DriverLicenseDataService.CheckExists(processor.NewDriverLicense.Code);
-            if (!dlExists)
+            switch (dlExists)
             {
-                await dataServices.DriverLicenseDataService.AddAsync(processor.NewDriverLicense);
-                _dataReport.NewDriverLicenses++;
-            }
-
-            if (dlExists)
-            {
-                var dlId = dataServices.DriverDataService.GetModel(processor.NewDriverLicense.Code).Id;
-                newDriver.DriverLicenseId = dlId;
+                case false:
+                    await dataServices.DriverLicenseDataService.AddAsync(processor.NewDriverLicense);
+                    _dataReport.NewDriverLicenses++;
+                    break;
+                case true:
+                {
+                    var dlId = dataServices.DriverDataService.GetModel(processor.NewDriverLicense.Code).Id;
+                    newDriver.DriverLicenseId = dlId;
+                    break;
+                }
             }
         }
-        
         _newDrivers.Add(newDriver);
 
     }
@@ -194,16 +192,16 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task ProcessHorseBuffer()
     {
-        if (_horseBuffer.Count == 0) return;
+        if (_horseExtract.Count == 0) return;
         
         var message = "Collecting Horse data";
         var options = CreateProgressBarOptions();
-        using var bar = new ProgressBar(_horseBuffer.Count, message, options);
+        using var bar = new ProgressBar(_horseExtract.Count, message, options);
         
-        using var semaphore = new SemaphoreSlim(3);
+        using var semaphore = new SemaphoreSlim(DriverBatchSize);
         var tasks = new List<Task>();
         
-        foreach (var h in _horseBuffer)
+        foreach (var h in _horseExtract)
         {
             tasks.Add(RunProcessHorseBufferTask(h, semaphore, bar));
         }
@@ -245,13 +243,17 @@ public class DriverAndHorseStep(
     {
         var bot = new HorseBotNo(browserOptions, scraperSettings, horseSourceId);
         await bot.RunBrowser(bot.Execute);
+        _horseResultsScrapeData.AddRange(bot.RaceDataCollected);
+        
+        var horseFromDb = await dataServices.HorseDataService.GetHorseFromDb(horseSourceId);
+        if (horseFromDb.Count > 0) return;
 
         var processor = new ProcessHorseScrapeData();
         var newHorse = processor.Process(bot.HorseDataCollected);
         _newHorses.Add(newHorse);
         _horseResultsScrapeData.AddRange(bot.RaceDataCollected);
     }
-
+    
     
     /// <summary>
     /// Iterate collected driver data for processing. Adds to create and update lists
@@ -260,14 +262,18 @@ public class DriverAndHorseStep(
     {
         if (_driverResultsScrapeData.Count == 0) return;
         
-        var message = "Processing driver results";
+        var message = "Processing collected driver results";
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(_driverResultsScrapeData.Count, message, options);
         foreach (var item in _driverResultsScrapeData)
         {
-            var data = await ProcessResultData(item);
-            var driverId = dataServices.DriverDataService.GetModel(item.DriverSourceId).Id;
-            data.StartNumberData.DriverId = driverId;
+            var id = dataServices.DriverDataService.GetModel(item.DriverSourceId).Id;
+            var data = await ProcessResultData(item, driverId: id);
+            if (data.Option == CreateUpdateOptions.Ignore)
+            {
+                bar.Tick();
+                continue;
+            }
             
             switch (data.Option)
             {
@@ -276,7 +282,11 @@ public class DriverAndHorseStep(
                     _dataReport.StartnumberCreated++;
                     break;
                 case CreateUpdateOptions.Update:
-                    _startNumbersUpdateDriver.Add(data.StartNumberData);
+                    _startNumbersUpdateDriver.Add(new RaceStartNumberUpdateDriver
+                    {
+                        Id = data.StartNumberData.DriverId,
+                        DriverId = data.StartNumberData.DriverId,
+                    });
                     _dataReport.StartnumberUpdatedDriver++;
                     break;
             }
@@ -290,14 +300,18 @@ public class DriverAndHorseStep(
     {
         if (_horseResultsScrapeData.Count == 0) return;
         
-        var message = "Processing horse results";
+        var message = "Processing collected horse results";
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(_horseResultsScrapeData.Count, message, options);
         foreach (var item in _horseResultsScrapeData)
         {
-            var data = await ProcessResultData(item);
-            var horseId = dataServices.HorseDataService.GetModel(item.HorseSourceId).Id;
-            data.StartNumberData.HorseId = horseId;
+            var id = dataServices.HorseDataService.GetModel(item.HorseSourceId).Id;
+            var data = await ProcessResultData(item, horseId: id);
+            if (data.Option == CreateUpdateOptions.Ignore)
+            {
+                bar.Tick();
+                continue;
+            };           
             
             switch (data.Option)
             {
@@ -306,9 +320,14 @@ public class DriverAndHorseStep(
                     _dataReport.StartnumberCreated++;
                     break;
                 case CreateUpdateOptions.Update:
-                    _startNumbersUpdateHorse.Add(data.StartNumberData);
+                    _startNumbersUpdateHorse.Add(new RaceStartNumberUpdateHorse
+                    {
+                        Id = data.StartNumberData.Id,
+                        HorseId = data.StartNumberData.HorseId,
+                    });
                     _dataReport.StartnumberUpdatedHorses++;
                     break;
+                case CreateUpdateOptions.Ignore: break;
             }
             bar.Tick();
         }
@@ -316,10 +335,16 @@ public class DriverAndHorseStep(
     /// <summary>
     /// Process the collected data and resolve if create or update
     /// </summary>
-    private async Task<CreateUpdateResult> ProcessResultData(ResultScrapeData resultData)
+    private async Task<CreateUpdateResult> ProcessResultData(ResultScrapeData resultData, string driverId = "", string horseId = "")
     {
-        // Normalize racecourse name and ensure exists in database
         
+        // add driver and horse to buffer if not previously resolved
+        var driverExists = dataServices.DriverDataService.CheckExists(resultData.DriverSourceId);
+        var horseExists = dataServices.HorseDataService.CheckExists(resultData.HorseSourceId);
+        if (!driverExists) driverBuffer.Add(resultData.DriverSourceId);
+        if (!horseExists) horseBuffer.Add(resultData.HorseSourceId);
+        
+        // Normalize racecourse name and ensure exists in database
         var racecourseNorm = resultData.RaceCourse.ToUpper();
         var racecourseExists = dataServices.RaceCourseDataService.CheckExists(racecourseNorm);
 
@@ -389,6 +414,16 @@ public class DriverAndHorseStep(
                 FromDirectSource = false,
             };
         
+        if (driverId != "")
+            if (raceStartNumber.DriverId == driverId)
+                return new CreateUpdateResult { Option = CreateUpdateOptions.Ignore };
+            else raceStartNumber.DriverId = driverId;
+        if (horseId != "")
+            if (raceStartNumber.HorseId == horseId)
+                return new CreateUpdateResult { Option = CreateUpdateOptions.Ignore };
+            else raceStartNumber.HorseId = horseId;
+        
+        
         // create race result item if not exists...
         var raceResultsExists = dataServices.RaceResultDataService.CheckExists(raceStartNumber.Id);
         if (!raceResultsExists) _raceResultsToCreate.Add(new RaceResult()
@@ -412,61 +447,46 @@ public class DriverAndHorseStep(
         };
     }
     
+    
     /// <summary>
     /// Handle lists for create and update. Will clear create and update lists
     /// </summary>
     private async Task StoreRaceData()
     {
-        /*
-        var startNumberChunks = _startNumbersToCreate.Chunk(100).ToList();
-        var raceResultChunks = _raceResultsToCreate.Chunk(100).ToList();
+        var startNumberChunks = _startNumbersToCreate.Chunk(500).ToList();
+        var raceResultChunks = _raceResultsToCreate.Chunk(500).ToList();
+        var startNumberDriverUpdateChunks = _startNumbersUpdateDriver.Chunk(500).ToList();
+        var startNumberHorseUpdateChunks = _startNumbersUpdateHorse.Chunk(500).ToList();
 
         var count = startNumberChunks.Count
                     + raceResultChunks.Count
-                    + _startNumbersUpdateDriver.Count
-                    + _startNumbersUpdateHorse.Count;
-        */
-        var count = _startNumbersToCreate.Count
-                    + _raceResultsToCreate.Count
-                    + _startNumbersUpdateDriver.Count
-                    + _startNumbersUpdateHorse.Count;
-        
-
+                    + startNumberDriverUpdateChunks.Count
+                    + startNumberHorseUpdateChunks.Count;
         var message = "Create and update collected data";
         var options = CreateProgressBarOptions();
-        
         using var bar = new ProgressBar(count, message, options);
 
-        foreach (var item in _startNumbersToCreate)
+        foreach (var chunk in startNumberChunks)
         {
-            await dataServices.RaceStartNumberDataService.AddAsync(item);
+            await dataServices.RaceStartNumberDataService.AddBulkAsync(chunk.ToList());
             bar.Tick();
         }
 
-
-        foreach (var item in _raceResultsToCreate)
+        foreach (var chunk in raceResultChunks)
         {
-            await dataServices.RaceResultDataService.AddAsync(item);
+            await dataServices.RaceResultDataService.AddBulkAsync(chunk.ToList());
             bar.Tick();
         }
 
-        foreach (var item in _startNumbersUpdateDriver)
+        foreach (var chunk in startNumberDriverUpdateChunks)
         {
-            await dataServices.RaceStartNumberDataService.UpdateDriverAsync(new RaceStartNumberUpdateDriver
-            {
-                Id = item.Id,
-                DriverId = item.DriverId,
-            });
+            await dataServices.RaceStartNumberDataService.UpdateDriversBulkAsync(chunk.ToList());
             bar.Tick();
         }
 
-        foreach (var item in _startNumbersUpdateHorse)
+        foreach (var chunk in startNumberHorseUpdateChunks)
         {
-            await dataServices.RaceStartNumberDataService.UpdateHorseAsync(new RaceStartNumberUpdateHorse
-            {
-                Id = item.Id,
-                HorseId = item.HorseId,
-            });
+            await dataServices.RaceStartNumberDataService.UpdateHorsesBulkAsync(chunk.ToList());
             bar.Tick();
         }
         
@@ -479,27 +499,40 @@ public class DriverAndHorseStep(
     /// Iterate collected result data and updates both driver and horse buffers;
     /// Will clear result data
     /// </summary>
-    private void ResovleNewBuffers()
+    private void ResolveExtractData()
     {
-        _driverBuffer.Clear();  
-        _horseBuffer.Clear();
+        var driverTreshhold = 0;
+        var horseTreshhold = 0;
+
+        foreach (var d in _driverExtract)
+            driverBuffer.Remove(d);
+        foreach (var h in _horseExtract)
+            horseBuffer.Remove(h);
         
-        foreach (var item in _driverResultsScrapeData)
+        _driverExtract.Clear();
+        _horseExtract.Clear();
+
+        foreach (var d in driverBuffer)
         {
-            var exists = dataServices.HorseDataService.CheckExists(item.HorseSourceId);
-            if (!exists) _horseBuffer.Add(item.HorseSourceId);
+            var exist = dataServices.DriverDataService.CheckExists(d);
+            if (exist) continue;
+            if (++driverTreshhold > DriverBatchSize) continue;
+            _driverExtract.Add(d);
         }
 
-        foreach (var item in _horseResultsScrapeData)
+        horseTreshhold += (driverTreshhold * 2);
+
+        foreach (var h in horseBuffer)
         {
-            var exists = dataServices.DriverDataService.CheckExists(item.DriverSourceId);
-            if (!exists) _driverBuffer.Add(item.DriverSourceId);
+            var exist = dataServices.HorseDataService.CheckExists(h);
+            if (exist) continue;
+            if (++horseTreshhold > HorseBatchSize) continue;
+            _horseExtract.Add(h);
         }
-        
         _driverResultsScrapeData.Clear();
         _horseResultsScrapeData.Clear();
     }
-
+    
     private bool? ResolveForeShoe(string shoe)
     {
         if (shoe == "showForeShoeOn") return true;

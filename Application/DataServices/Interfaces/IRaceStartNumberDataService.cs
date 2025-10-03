@@ -5,12 +5,12 @@ namespace Application.DataServices.Interfaces;
 
 public interface IRaceStartNumberDataService
 {
-    Task UpdateDriverAsync(RaceStartNumberUpdateDriver data);
-    Task UpdateHorseAsync(RaceStartNumberUpdateHorse data);
+    Task AddBulkAsync(List<RaceStartNumber> data);
     Task UpdateAsync(RaceStartNumberUpdate data);
+    Task UpdateDriversBulkAsync(List<RaceStartNumberUpdateDriver> data);
+    Task UpdateHorsesBulkAsync(List<RaceStartNumberUpdateHorse> data);
     Task InitCache();
     bool CheckExists(string key);
     RaceStartNumber GetModel(string key);
     Task AddAsync(RaceStartNumber model);
-    Task AddAsync(List<RaceStartNumber> models);
 }

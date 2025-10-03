@@ -25,10 +25,4 @@ public class BaseDbService<TModel>(
         await using var connection = CreateConnection();
         await connection.ExecuteAsync(InsertCommand, model);
     }
-    
-    public async Task AddAsync(List<TModel> models)
-    {
-        await using var connection = CreateConnection();
-        await connection.ExecuteAsync(InsertCommand, models);
-    }
 }

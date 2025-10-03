@@ -26,6 +26,9 @@ public class StartlistResultsCollectionStep(
         var message = "Collecting startlists and results!";
         var options = CreateProgressBarOptions();
         
+        AppLogger.LogDev("Limiting calendar links");
+        if (_calendarLinks.Count > 2) _calendarLinks = _calendarLinks[..2];
+        
         using (var bar = new ProgressBar(_calendarLinks.Count, message, options))
             foreach (var item in _calendarLinks)
             {

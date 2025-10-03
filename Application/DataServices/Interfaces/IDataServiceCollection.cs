@@ -6,9 +6,9 @@ namespace Application.DataServices.Interfaces;
 public interface IDataServiceCollection
 {
     IBaseDataService<Competition> CompetitionDataService { get; }
-    IBaseDataService<Driver> DriverDataService { get; }
+    IDriverDataService DriverDataService { get; }
     IDriverLicenseDataService DriverLicenseDataService { get; }
-    IBaseDataService<Horse> HorseDataService { get; }
+    IHorseDataService HorseDataService { get; }
     IBaseDataService<Race> RaceDataService { get; }
     IBaseDataService<Racecourse> RaceCourseDataService { get; }
     IRaceResultDataService RaceResultDataService { get; }

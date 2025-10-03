@@ -23,11 +23,5 @@ public class BaseDataService<TModel>(
         await dbService.AddAsync(model);
         cacheService.AddSingle(model);
     }
-
-    public async Task AddAsync(List<TModel> models)
-    {
-        await dbService.AddAsync(models);
-        cacheService.AddRange(models);
-    }
 }
     
