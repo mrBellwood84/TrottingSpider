@@ -17,7 +17,6 @@ public class DriverAndHorseStep(
     HashSet<string> driverBuffer,
     HashSet<string> horseBuffer)
 {
-
     private const int DriverBatchSize = 2;
     private const int HorseBatchSize = 6;
     
@@ -519,8 +518,6 @@ public class DriverAndHorseStep(
             if (++driverTreshhold > DriverBatchSize) continue;
             _driverExtract.Add(d);
         }
-
-        horseTreshhold += (driverTreshhold * 2);
 
         foreach (var h in horseBuffer)
         {
