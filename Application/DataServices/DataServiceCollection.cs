@@ -28,7 +28,9 @@ public class DataServiceCollection(
         List<Task> tasks = new List<Task>
         {
             CompetitionDataService.InitCache(),
+            DriverDataService.InitDriverCacheAsync(),
             DriverLicenseDataService.InitCache(),
+            HorseDataService.InitHorseCacheAsync(),
             RaceDataService.InitCache(),
             RaceCourseDataService.InitCache(),
             RaceResultDataService.InitCache(),

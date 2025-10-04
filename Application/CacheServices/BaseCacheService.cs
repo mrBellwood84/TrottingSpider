@@ -1,4 +1,5 @@
 ﻿using Application.CacheServices.Interfaces;
+using Models.DbModels;
 
 namespace Application.CacheServices;
 

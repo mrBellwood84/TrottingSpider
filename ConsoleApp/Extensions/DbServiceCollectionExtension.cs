@@ -11,6 +11,7 @@ public static class DbServiceCollectionExtension
     public static IServiceCollection AddDbServices(this IServiceCollection services)
     {
         // add scoped db services
+        services.AddScoped<IBufferDbService, BufferDbService>();
         services.AddScoped<IBaseDbService<Competition>, CompetitionDbService>();
         services.AddScoped<IBaseDbService<Driver>, DriverDbService>();
         services.AddScoped<IBaseDbService<DriverLicense>, DriverLicenseDbService>();

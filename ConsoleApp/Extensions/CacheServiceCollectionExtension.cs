@@ -10,6 +10,7 @@ public static class CacheServiceCollectionExtension
 {
     public static IServiceCollection AddCacheServices(this IServiceCollection services)
     {
+        services.AddSingleton<IBufferCacheService, BufferCacheService>();
         services.AddSingleton<IBaseCacheService<Competition>, CompetitionCacheService>();
         services.AddSingleton<IBaseCacheService<DriverLicense>, DriverLicenseCacheService>();
         services.AddSingleton<IBaseCacheService<Driver>, DriverCacheService>();

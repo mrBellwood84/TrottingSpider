@@ -11,7 +11,8 @@ namespace Application.Pipelines.NO;
 public class Pipeline(
     BrowserOptions browserOptions,
     ScraperSettings scraperSettings,
-    IDataServiceCollection dataServices)
+    IDataServiceCollection dataServices,
+    IBufferDataService bufferDataService)
 {
     public async Task RunAsync()
     {
@@ -20,6 +21,14 @@ public class Pipeline(
         
         // init data cache here
         await dataServices.InitCaches();
+        await bufferDataService.InitBuffers();
+
+        if (bufferDataService.DriverBuffer.Count > 0 || bufferDataService.HorseBuffer.Count > 0)
+        {
+            var dataCollector = new DriverAndHorseStep(browserOptions, scraperSettings, 
+                dataServices, bufferDataService);
+            await dataCollector.RunAsync();
+        }
         
         foreach (var option in _calendarYearMonthOptions())
         { 
@@ -30,11 +39,12 @@ public class Pipeline(
             var calendarLinks = await calendarStep.RunAsync();
             
             // collect startlists and results data
-            var startlistResultStep = new StartlistResultsCollectionStep(browserOptions, calendarLinks);
+            var startlistResultStep = new StartlistResultsCollectionStep(browserOptions, calendarLinks,
+                dataServices, bufferDataService);
             await startlistResultStep.RunAsync();
             
-            var driverAndHorsesStep = new DriverAndHorseStep(browserOptions, scraperSettings, dataServices,
-                startlistResultStep.Drivers, startlistResultStep.Horses);
+            var driverAndHorsesStep = new DriverAndHorseStep(browserOptions, scraperSettings, 
+                dataServices, bufferDataService);
             await driverAndHorsesStep.RunAsync();
             
             var updateStep = new UpdateStartlistAndResultsStep(

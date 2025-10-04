@@ -9,6 +9,10 @@ namespace Persistence.Services.Extensions;
 public class RaceResultsDbServiceExtension(DbConnectionStrings dbConnectionStrings) 
     : DbConnection(dbConnectionStrings), IRaceResultsDbServiceExtension
 {
+    private readonly string _insertCommand = 
+        "INSERT INTO RaceResult (Id, RaceStartNumberId, Place, Odds, Time, KmTime, RRemark, GRemark, FromDirectSource)" +
+        "VALUES (@Id, @RaceStartNumberId, @Place, @Odds, @Time, @KmTime, @RRemark, @GRemark, @FromDirectSource)";
+    
     private readonly string _updateCommand = 
         "UPDATE RaceResult SET " +
         "Time = @Time, FromDirectSource = @FromDirectSource " +
@@ -18,7 +22,7 @@ public class RaceResultsDbServiceExtension(DbConnectionStrings dbConnectionStrin
     {
         await using var connection = CreateConnection();
         await using var trans = await connection.BeginTransactionAsync();
-        await connection.ExecuteAsync(_updateCommand, data, trans);
+        await connection.ExecuteAsync(_insertCommand, data, transaction: trans);
         await trans.CommitAsync();
     }
     
