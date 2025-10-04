@@ -37,13 +37,6 @@ public class BaseCacheService<TModel> : IBaseCacheService<TModel>
     {
         _cache.Clear();
         AddRange(models);
-        if (typeof(TModel) == typeof(DriverLicense))
-        {
-            foreach (var key in _cache.Keys)
-            {
-                AppLogger.LogDev($"key: {key}");
-            }
-        }
     }
 
     /// <summary>
