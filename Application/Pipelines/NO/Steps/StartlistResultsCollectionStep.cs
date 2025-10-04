@@ -48,44 +48,30 @@ public class StartlistResultsCollectionStep(
                 ResultDataCollected.AddRange(resultBot.DataCollected);
                 bar.Tick();
             }
-        
 
-        var count = StartlistDataCollected.Count + ResultDataCollected.Count;
-        var message2 = "Adding drivers and horses to buffer";
-        using var bar2 = new ProgressBar(count, message2, options);
-        
+        await SetDriverHorseBuffers();
+    }
+
+    
+    private async Task SetDriverHorseBuffers()
+    {
         foreach (var item in StartlistDataCollected)
         {
-            await ResolveDriverBuffer(item.DriverSourceId);
-            await ResolveHorseBuffer(item.HorseSourceId);
-            bar2.Tick();
+            _drivers.Add(item.DriverSourceId);
+            _horses.Add(item.HorseSourceId);
         }
 
         foreach (var item in ResultDataCollected)
         {
-            await ResolveDriverBuffer(item.DriverSourceId);
-            await ResolveHorseBuffer(item.HorseSourceId);
-            bar2.Tick();
+            _drivers.Add(item.DriverSourceId);
+            _horses.Add(item.HorseSourceId);
         }
+        
+        AppLogger.LogPositive("Setting data collection buffers");
+        await bufferDataService.AddDriverBulkAsync(_drivers.ToList());
+        await bufferDataService.AddHorseBulkAsync(_horses.ToList());
     }
-
-    private async Task ResolveDriverBuffer(string driverSourceId)
-    {
-        var driverResolved = dataServices.DriverDataService.CheckExists(driverSourceId);
-        if (driverResolved) return;
-        var driverInBuffer = bufferDataService.DriverBuffer.Contains(driverSourceId);
-        if (driverInBuffer) return;
-        await bufferDataService.AddDriverAsync(driverSourceId);
-    }
-
-    private async Task ResolveHorseBuffer(string horseSourceId)
-    {
-        var horseResolved = dataServices.HorseDataService.CheckExists(horseSourceId);
-        if (horseResolved) return;
-        var horseInBuffer = bufferDataService.HorseBuffer.Contains(horseSourceId);
-        if (horseInBuffer) return;
-        await bufferDataService.AddHorseAsync(horseSourceId);
-    }
+    
     
 
     private ProgressBarOptions CreateProgressBarOptions()

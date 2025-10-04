@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Security.Permissions;
+using Dapper;
 using Models.DbModels;
 using Models.Settings;
 using Persistence.Interfaces;
@@ -35,6 +36,16 @@ public class BufferDbService(DbConnectionStrings dbConnectionStrings)
         await using var connection = CreateConnection();
         await connection.ExecuteAsync(_insertNewDriver, data);
     }
+
+    public async Task AddDriverBulkAsync(List<string> sourceIds)
+    {
+        var data = sourceIds.Select(sourceId => 
+            new BufferItem { Id = Guid.NewGuid().ToString(), SourceId = sourceId }).ToList();
+        await using var connection = CreateConnection();
+        await using var trans = await connection.BeginTransactionAsync();
+        await connection.ExecuteAsync(_insertNewDriver, data, transaction: trans);
+        await trans.CommitAsync();
+    }
     public async Task SetDriverCollectedAsync(string sourceId)
     {
         var data = new  BufferItem { SourceId = sourceId };
@@ -58,6 +69,15 @@ public class BufferDbService(DbConnectionStrings dbConnectionStrings)
         };
         await using var connection = CreateConnection();
         await connection.ExecuteAsync(_insertNewHorse, data);
+    }
+    public async Task AddHorseBulkAsync(List<string> sourceIds)
+    {
+        var data = sourceIds.Select(sourceId =>
+            new BufferItem { Id = Guid.NewGuid().ToString(), SourceId = sourceId }).ToList();
+        await using var connection = CreateConnection();
+        await using var trans = await connection.BeginTransactionAsync();
+        await connection.ExecuteAsync(_insertNewHorse, data, transaction: trans);
+        await trans.CommitAsync();
     }
     public async Task SetHorsesCollectedAsync(string sourceId)
     {

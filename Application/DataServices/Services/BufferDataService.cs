@@ -23,6 +23,15 @@ public class BufferDataService(IBufferCacheService cache, IBufferDbService dbSer
         cache.AddDriver(sourceId);
     }
 
+    public async Task AddDriverBulkAsync(List<string> sourceIds)
+    {
+        var filtered = sourceIds.Where(x => !cache.AllDrivers.Contains(x)).ToList();
+        if (filtered.Count == 0) return;
+        await dbService.AddDriverBulkAsync(filtered);
+        foreach (var id in filtered)
+            cache.AddDriver(id);
+    }
+
     public async Task RemoveDriverAsync(string sourceId)
     {
         await dbService.SetDriverCollectedAsync(sourceId);
@@ -34,6 +43,15 @@ public class BufferDataService(IBufferCacheService cache, IBufferDbService dbSer
         if (cache.AllHorses.Contains(sourceId)) return;
         await dbService.AddHorseAsync(sourceId);
         cache.AddHorse(sourceId);
+    }
+
+    public async Task AddHorseBulkAsync(List<string> sourceIds)
+    {
+        var filtered = sourceIds.Where(x => !cache.AllHorses.Contains(x)).ToList();
+        if (filtered.Count == 0) return;
+        await dbService.AddHorseBulkAsync(filtered);
+        foreach (var id in filtered)
+            cache.AddHorse(id);
     }
 
     public async Task RemoveHorseAsync(string sourceId)
