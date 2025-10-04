@@ -14,10 +14,5 @@ public class RaceResultDataService(
 {
     private readonly IBaseCacheService<RaceResult> _cacheService = cacheService;
 
-    public async Task AddBulkAsync(List<RaceResult> data)
-    {
-        await raceResultDbServiceExtension.InsertBulkAsync(data);
-        _cacheService.AddRange(data);
-    }
     public async Task UpdateAsync(RaceResultUpdate data) => await raceResultDbServiceExtension.UpdateAsync(data);
 }

@@ -104,7 +104,7 @@ public class DriverAndHorseStep(
         var message = "Collecting Driver data";
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(_driversToCollect.Count, message, options);
-        
+
         using var semaphore = new SemaphoreSlim(2);
         var tasks = new List<Task>();
         
@@ -112,6 +112,7 @@ public class DriverAndHorseStep(
         {
             tasks.Add(RunProcessDriverBufferTask(d, semaphore, bar));
         }
+        
         await Task.WhenAll(tasks);
     }
     /// <summary>
@@ -119,23 +120,11 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task RunProcessDriverBufferTask(string sourceId, SemaphoreSlim semaphore, ProgressBar bar)
     {
-        var complete = false;
         await semaphore.WaitAsync();
         try
         {
-            while (!complete)
-            {
-                try
-                {
-                    await CollectDriverData(sourceId);
-                    bar.Tick();
-                    complete = true;
-                }
-                catch (TimeoutException)
-                {
-                    AppLogger.LogNegative($"Error occured when collecting data for driver {sourceId}");
-                }
-            }
+            await CollectDriverData(sourceId);
+            bar.Tick();
         }
         finally
         {
@@ -204,23 +193,11 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task RunProcessHorseBufferTask(string sourceId, SemaphoreSlim semaphore, ProgressBar bar)
     {
-        var complete = false;
         await semaphore.WaitAsync();
         try
         {
-            while (!complete)
-            {
-                try
-                {
-                    await CollectHorseData(sourceId);
-                    bar.Tick();
-                    complete = true;
-                }
-                catch (TimeoutException)
-                {
-                    AppLogger.LogNegative($"Error occured when collecting data for horse {sourceId}");
-                }
-            }
+            await CollectHorseData(sourceId);
+            bar.Tick();
         }
         finally
         {

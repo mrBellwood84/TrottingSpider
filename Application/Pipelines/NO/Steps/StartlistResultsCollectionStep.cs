@@ -66,7 +66,6 @@ public class StartlistResultsCollectionStep(
             _horses.Add(item.HorseSourceId);
         }
         
-        AppLogger.LogPositive("Setting data collection buffers");
         await bufferDataService.AddDriverBulkAsync(_drivers.ToList());
         await bufferDataService.AddHorseBulkAsync(_horses.ToList());
     }

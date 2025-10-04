@@ -72,7 +72,7 @@ public class DriverBotNo(
         var listItems = await page.Locator(DriverInfoListXpath).AllAsync();
 
         var name = string.Empty;
-        var yob = await page.Locator(YearOfBirthXpath).TextContentAsync();
+        var yob = await ResolveYearOfBirth(page);
         var driverLicense = string.Empty;
 
         foreach (var item in listItems)
@@ -187,5 +187,18 @@ public class DriverBotNo(
         var urlSplit = url.Split('/');
         var length = urlSplit.Length;
         return urlSplit[length - 1].Trim();
+    }
+
+    private async Task<string> ResolveYearOfBirth(IPage page)
+    {
+        try
+        {
+            var result = await page.Locator(YearOfBirthXpath).TextContentAsync();
+            return result;
+        }
+        catch (TimeoutException)
+        {
+            return "1900";
+        }
     }
 }
