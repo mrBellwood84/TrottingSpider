@@ -7,7 +7,7 @@ namespace Application.DataServices;
 public class DataServiceCollection(
     IBaseDataService<Competition> competitionDataService,
     IDriverDataService driverDataService,
-    IDriverLicenseDataService driverLicenseDataService,
+    IBaseDataService<DriverLicense> driverLicenseDataService,
     IHorseDataService horseDataService,
     IBaseDataService<Race> raceDataService,
     IBaseDataService<Racecourse> raceCourseDataService,
@@ -16,7 +16,7 @@ public class DataServiceCollection(
 {
     public IBaseDataService<Competition> CompetitionDataService { get; } = competitionDataService;
     public IDriverDataService DriverDataService { get; } = driverDataService;
-    public IDriverLicenseDataService DriverLicenseDataService { get; } = driverLicenseDataService;
+    public IBaseDataService<DriverLicense> DriverLicenseDataService { get; } = driverLicenseDataService;
     public IHorseDataService HorseDataService { get; } = horseDataService;
     public IBaseDataService<Race> RaceDataService { get; } = raceDataService;
     public IBaseDataService<Racecourse> RaceCourseDataService { get; } = raceCourseDataService;
@@ -25,8 +25,8 @@ public class DataServiceCollection(
 
     public async Task InitCaches()
     {
-        List<Task> tasks = new List<Task>
-        {
+        List<Task> tasks =
+        [
             CompetitionDataService.InitCache(),
             DriverDataService.InitDriverCacheAsync(),
             DriverLicenseDataService.InitCache(),
@@ -35,7 +35,7 @@ public class DataServiceCollection(
             RaceCourseDataService.InitCache(),
             RaceResultDataService.InitCache(),
             RaceStartNumberDataService.InitCache()
-        };
+        ];
         
         await Task.WhenAll(tasks);
         AppLogger.LogNeutral("Data cache initialized.");

@@ -154,29 +154,26 @@ public class DriverAndHorseStep(
         await bot.RunBrowser(bot.Execute);
         _driverResultsScrapeData.AddRange(bot.RaceDataCollected);
 
-        var dl = dataServices.DriverLicenseDataService.GetFullCache();
-        var processor = new ProcessDriverScrapeData(dl);
+        var processor = new ProcessDriverScrapeData();
         var newDriver = processor.Process(bot.DriverDataCollected);
+        
+        // resolve licence for drived
+        var driverLicenceExists = dataServices.DriverLicenseDataService
+            .CheckExists(processor.NewDriverLicense.Code);
+        if (driverLicenceExists)
+        {
+            var licence = dataServices.DriverLicenseDataService.GetModel(processor.NewDriverLicense.Code);
+            newDriver.DriverLicenseId = licence.Id;
+        }
+        else
+        {
+            await dataServices.DriverLicenseDataService.AddAsync(processor.NewDriverLicense);
+            newDriver.DriverLicenseId = processor.NewDriverLicense.Id;
+            _dataReport.NewDriverLicenses++;
+        }
+        
         _driverResultsScrapeData.AddRange(bot.RaceDataCollected);
         
-        if (processor.NewDriverLicense != null)
-        {
-            var dlExists = dataServices.DriverLicenseDataService.CheckExists(processor.NewDriverLicense.Code);
-            switch (dlExists)
-            {
-                case false:
-                    await dataServices.DriverLicenseDataService.AddAsync(processor.NewDriverLicense);
-                    newDriver.DriverLicenseId = processor.NewDriverLicense.Id;
-                    _dataReport.NewDriverLicenses++;
-                    break;
-                case true:
-                {
-                    var dlId = dataServices.DriverDataService.GetModel(processor.NewDriverLicense.Code).Id;
-                    newDriver.DriverLicenseId = dlId;
-                    break;
-                }
-            }
-        }
         
         var driverFromDb = await dataServices.DriverDataService.GetDriverFromDb(bot.DriverDataCollected.SourceId);
         if (driverFromDb.Count > 0) return;  

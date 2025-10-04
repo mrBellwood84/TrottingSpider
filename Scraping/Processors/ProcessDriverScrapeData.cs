@@ -3,16 +3,17 @@ using Models.ScrapeData;
 
 namespace Scraping.Processors;
 
-public class ProcessDriverScrapeData(Dictionary<string, DriverLicense> driverLicenses)
+public class ProcessDriverScrapeData
 {
-    public DriverLicense NewDriverLicense { get; private set; } = null;
+    public DriverLicense NewDriverLicense { get; private set; }
     
     public Driver Process(DriverScrapeData rawData) {
     {
+        NewDriverLicense = _parseLicenseCode(rawData.DriverLicense);
+            
         return new Driver
         {
             Id = Guid.NewGuid().ToString(),
-            DriverLicenseId = _parseLicenseCode(rawData.DriverLicense),
             SourceId = rawData.SourceId,
             Name = rawData.Name,
             YearOfBirth = _parseYearOfBirth(rawData.YearOfBirth),
@@ -30,22 +31,30 @@ public class ProcessDriverScrapeData(Dictionary<string, DriverLicense> driverLic
             return 1900;
         }
     }
-    private string _parseLicenseCode(string licenseCode)
+    private DriverLicense _parseLicenseCode(string licenseCode)
     {
-        var splitted =  licenseCode.Split(')');
-        if (splitted.Length < 2)
-            return " - ";
-        
-        var code = splitted[0].Split("(")[1].Trim().ToUpper();
-        if (driverLicenses.TryGetValue(code, out var entity)) return entity.Id;
+        try
+        {
+            var splitted = licenseCode.Split(')');
+            var code = splitted[0].Split("(")[1].Trim().ToUpper();
 
-        NewDriverLicense = new DriverLicense
+            NewDriverLicense = new DriverLicense
+            {
+                Id = Guid.NewGuid().ToString(),
+                Code = code,
+                Description = splitted[1].Trim(),
+            };
+
+            return NewDriverLicense;
+        }
+        catch (IndexOutOfRangeException) {}
+        
+        return new DriverLicense
         {
             Id = Guid.NewGuid().ToString(),
-            Code = code,
-            Description = splitted[1].Trim(),
+            Code = "-",
+            Description = "Ikke gyldig lisens",
         };
 
-        return NewDriverLicense.Id;
     }
 }
