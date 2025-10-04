@@ -28,12 +28,8 @@ public class DriverAndHorseStep(
     private readonly List<ResultScrapeData> _driverResultsScrapeData = [];
     private readonly List<ResultScrapeData> _horseResultsScrapeData = [];
     
-    private readonly List<RaceStartNumber> _startNumbersToCreate = [];
-    private readonly List<RaceStartNumberUpdateDriver> _startNumbersUpdateDriver = [];
-    private readonly List<RaceStartNumberUpdateHorse> _startNumbersUpdateHorse = [];
-    private readonly List<RaceResult> _raceResultsToCreate = [];
-    
-    private DriverAndHorseStateDataReport _dataReport = new DriverAndHorseStateDataReport();
+    private readonly RaceDataContainer _raceDataContainer = new();
+    private DriverAndHorseStateDataReport _dataReport = new();
     
     public async Task RunAsync()
     {
@@ -64,6 +60,7 @@ public class DriverAndHorseStep(
             await ResolveDataToCollect();
             
             _dataReport.Report();
+            _raceDataContainer.Clear();
         }
     }
 
@@ -263,22 +260,17 @@ public class DriverAndHorseStep(
         {
             var id = dataServices.DriverDataService.GetModel(item.DriverSourceId).Id;
             var data = await ProcessResultData(item, driverId: id);
-            if (data.Option == CreateUpdateOptions.Ignore)
-            {
-                bar.Tick();
-                continue;
-            }
             
             switch (data.Option)
             {
                 case CreateUpdateOptions.Create:
-                    _startNumbersToCreate.Add(data.StartNumberData);
+                    _raceDataContainer.StartNumbersCreate.Add(data.StartNumberData);
                     _dataReport.StartnumberCreated++;
                     break;
                 case CreateUpdateOptions.Update:
-                    _startNumbersUpdateDriver.Add(new RaceStartNumberUpdateDriver
+                    _raceDataContainer.StartNumbersUpdateDriver.Add(new RaceStartNumberUpdateDriver()
                     {
-                        Id = data.StartNumberData.DriverId,
+                        Id = data.StartNumberData.Id,
                         DriverId = data.StartNumberData.DriverId,
                     });
                     _dataReport.StartnumberUpdatedDriver++;
@@ -302,27 +294,21 @@ public class DriverAndHorseStep(
         {
             var id = dataServices.HorseDataService.GetModel(item.HorseSourceId).Id;
             var data = await ProcessResultData(item, horseId: id);
-            if (data.Option == CreateUpdateOptions.Ignore)
-            {
-                bar.Tick();
-                continue;
-            }    
             
             switch (data.Option)
             {
                 case CreateUpdateOptions.Create:
-                    _startNumbersToCreate.Add(data.StartNumberData);
+                    _raceDataContainer.StartNumbersCreate.Add(data.StartNumberData);
                     _dataReport.StartnumberCreated++;
                     break;
                 case CreateUpdateOptions.Update:
-                    _startNumbersUpdateHorse.Add(new RaceStartNumberUpdateHorse
+                    _raceDataContainer.StartNumbersUpdateHorse.Add(new RaceStartNumberUpdateHorse()
                     {
                         Id = data.StartNumberData.Id,
                         HorseId = data.StartNumberData.HorseId,
                     });
                     _dataReport.StartnumberUpdatedHorses++;
                     break;
-                case CreateUpdateOptions.Ignore: break;
             }
             bar.Tick();
         }
@@ -333,13 +319,9 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task<CreateUpdateResult> ProcessResultData(ResultScrapeData resultData, string driverId = "", string horseId = "")
     {
-        // add driver and horse to buffer if not previously resolved
-        var driverInCache = dataServices.DriverDataService.CheckExists(resultData.DriverSourceId);
-        var horseInCache = dataServices.HorseDataService.CheckExists(resultData.HorseSourceId);
-        
         // add to buffers if data not collected!!!
-        if (!driverInCache) await bufferService.AddDriverAsync(resultData.DriverSourceId);
-        if (!horseInCache || horseInCache) await bufferService.AddHorseAsync(resultData.HorseSourceId);
+        await bufferService.AddDriverAsync(resultData.DriverSourceId);
+        await bufferService.AddHorseAsync(resultData.HorseSourceId);
         
         // Normalize racecourse name and ensure exists in database
         var racecourseNorm = resultData.RaceCourse.ToUpper();
@@ -360,27 +342,36 @@ public class DriverAndHorseStep(
         // get or create competition data item
         var date = FormatDateString(resultData.Date);
         var competitionKey = $"{racecourseId}_{date}";
-        var competitionExists = dataServices.CompetitionDataService.CheckExists(competitionKey);
-        if (!competitionExists)
+        
+        bool competitionDbExists = dataServices.CompetitionDataService.CheckExists(competitionKey);
+        bool competitionTempExists = _raceDataContainer.Competitions.ContainsKey(competitionKey);
+
+        if (!competitionDbExists && !competitionTempExists)
         {
-            await dataServices.CompetitionDataService.AddAsync(new Competition()
+            _raceDataContainer.Competitions.Add(competitionKey, new Competition()
             {
                 Id = Guid.NewGuid().ToString(),
                 RaceCourseId = racecourseId,
-                Date = date
+                Date = date,
             });
             _dataReport.NewCompetition++;
         }
-        var competitionId = dataServices.CompetitionDataService.GetModel(competitionKey).Id;
+        
+        var competitionId = competitionDbExists ? 
+            dataServices.CompetitionDataService.GetModel(competitionKey).Id : 
+            _raceDataContainer.Competitions[competitionKey].Id;
         
         
         // get or create race data item
         var raceNumber = int.Parse(resultData.RaceNumber);
         var raceKey = $"{competitionId}_{raceNumber}";
-        var race = dataServices.RaceDataService.CheckExists(raceKey);
-        if (!race)
+        
+        bool raceDbExists = dataServices.RaceDataService.CheckExists(raceKey);
+        bool raceTempExists = _raceDataContainer.Races.ContainsKey(raceKey);
+
+        if (!raceDbExists && !raceTempExists)
         {
-            await dataServices.RaceDataService.AddAsync(new Race()
+            _raceDataContainer.Races.Add(raceKey, new Race()
             {
                 Id = Guid.NewGuid().ToString(),
                 CompetitionId = competitionId,
@@ -389,58 +380,67 @@ public class DriverAndHorseStep(
             });
             _dataReport.NewRaces++;
         }
-        var raceId = dataServices.RaceDataService.GetModel(raceKey).Id;
-
+        
+        var raceId = raceDbExists ? dataServices.RaceDataService.GetModel(raceKey).Id :
+            _raceDataContainer.Races[raceKey].Id;
+        
         
         // get or create race start number item
         var programNumber = int.Parse(resultData.StartNumber);
         var raceStartNumberKey = $"{raceId}_{programNumber}";
-        var raceStartNumberExists = dataServices.RaceStartNumberDataService.CheckExists(raceStartNumberKey);
-        var raceStartNumber = raceStartNumberExists
-            ? dataServices.RaceStartNumberDataService.GetModel(raceStartNumberKey)
-            : new RaceStartNumber()
+        
+        var raceStartNumberInDbExists = dataServices.RaceStartNumberDataService.CheckExists(raceStartNumberKey);
+        var raceStartNumberTempExists = _raceDataContainer.AllStartNumbers.ContainsKey(raceStartNumberKey);
+        
+        var raceStartNumber = raceStartNumberInDbExists ? 
+            dataServices.RaceStartNumberDataService.GetModel(raceStartNumberKey) :
+            (raceStartNumberTempExists ? _raceDataContainer.AllStartNumbers[raceStartNumberKey] : 
+                new RaceStartNumber()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    RaceId = raceId,
+                    ProgramNumber = programNumber,
+                    TrackNumber = int.Parse(resultData.TrackNumber),
+                    Distance = int.Parse(resultData.Distance),
+                    ForeShoe = ResolveForeShoe(resultData.ForeShoe),
+                    HindShoe = ResolveHindShoe(resultData.HindShoe),
+                    Cart = resultData.Cart,
+                    FromDirectSource = false,  
+                });
+        
+        // resolve race startnumber here
+        var raceResultInDbExists = dataServices.RaceResultDataService.CheckExists(raceStartNumber.Id);
+        var raceResultTempExists = _raceDataContainer.AllStartNumbers.ContainsKey(raceStartNumber.Id);
+        
+        if (!raceResultInDbExists && !raceResultTempExists)
+        {
+            var data = new RaceResult()
             {
                 Id = Guid.NewGuid().ToString(),
-                RaceId = raceId,
-                ProgramNumber = programNumber,
-                TrackNumber = int.Parse(resultData.TrackNumber),
-                Distance = int.Parse(resultData.Distance),
-                ForeShoe = ResolveForeShoe(resultData.ForeShoe),
-                HindShoe = ResolveHindShoe(resultData.HindShoe),
-                Cart = resultData.Cart,
+                RaceStartNumberId = raceStartNumber.Id,
+                Place = int.TryParse(resultData.Place, out var p) ? p : 0,
+                Time = resultData.Time,
+                Odds = int.TryParse(resultData.Odds, out var od) ? od : 0,
+                KmTime = resultData.KmTime,
+                RRemark = resultData.RRemark,
+                GRemark = resultData.GRemark,
                 FromDirectSource = false,
             };
-        
-        // create race result item if not exists...
-        var raceResultsExists = dataServices.RaceResultDataService.CheckExists(raceStartNumber.Id);
-        if (!raceResultsExists) _raceResultsToCreate.Add(new RaceResult()
-        {
-            Id = Guid.NewGuid().ToString(),
-            RaceStartNumberId = raceStartNumber.Id,
-            Place = int.TryParse(resultData.Place, out var p) ? p : 0,
-            Time = resultData.Time,
-            Odds = int.TryParse(resultData.Odds, out var od) ? od : 0,
-            KmTime = resultData.KmTime,
-            RRemark = resultData.RRemark,
-            GRemark = resultData.GRemark,
-            FromDirectSource = false,
-        });
-        
+            _raceDataContainer.RaceResultsCreate.Add(data);
+            _raceDataContainer.RaceResultKeys.Add(raceStartNumber.Id);
+        }
         
         if (driverId != "")
-            if (raceStartNumber.DriverId == driverId)
-                return new CreateUpdateResult { Option = CreateUpdateOptions.Ignore };
-            else raceStartNumber.DriverId = driverId;
+            raceStartNumber.DriverId = driverId;
         if (horseId != "")
-            if (raceStartNumber.HorseId == horseId)
-                return new CreateUpdateResult { Option = CreateUpdateOptions.Ignore };
-            else raceStartNumber.HorseId = horseId;
+            raceStartNumber.HorseId = horseId;
         
-        // return option for create or update
-        return new CreateUpdateResult()
+        return new CreateUpdateResult
         {
             StartNumberData = raceStartNumber,
-            Option = raceStartNumberExists ? CreateUpdateOptions.Update : CreateUpdateOptions.Create
+            Option = (raceResultInDbExists || raceResultTempExists)
+                ? CreateUpdateOptions.Update
+                : CreateUpdateOptions.Create
         };
     }
     
@@ -450,47 +450,59 @@ public class DriverAndHorseStep(
     /// </summary>
     private async Task StoreRaceData()
     {
-        var startNumberChunks = _startNumbersToCreate.Chunk(500).ToList();
-        var raceResultChunks = _raceResultsToCreate.Chunk(500).ToList();
-        var startNumberDriverUpdateChunks = _startNumbersUpdateDriver.Chunk(500).ToList();
-        var startNumberHorseUpdateChunks = _startNumbersUpdateHorse.Chunk(500).ToList();
+
+        var compChunks = _raceDataContainer.Competitions.Values.Chunk(500).ToList();
+        var raceChunks = _raceDataContainer.Races.Values.Chunk(500).ToList();
+        var rsnCreateChunks = _raceDataContainer.StartNumbersCreate.Chunk(500).ToList();
+        var rsnDriverChunks = _raceDataContainer.StartNumbersUpdateDriver.Chunk(500).ToList();
+        var rsnHorseChunks = _raceDataContainer.StartNumbersUpdateHorse.Chunk(500).ToList();
+        var resultChunks = _raceDataContainer.RaceResultsCreate.Chunk(500).ToList();
         
-        var count = startNumberChunks.Count
-                    + raceResultChunks.Count
-                    + startNumberDriverUpdateChunks.Count
-                    + startNumberHorseUpdateChunks.Count;
-        var message = "Create and update collected data";
+        var count = compChunks.Count + raceChunks.Count + rsnCreateChunks.Count +
+                    rsnDriverChunks.Count + rsnHorseChunks.Count + resultChunks.Count;
+        var message = "Storing data to database";
         var options = CreateProgressBarOptions();
-        using var bar = new ProgressBar(count, message, options);
+        using var bar = new ProgressBar(count,message,options);
 
-        foreach (var chunk in startNumberChunks)
+        foreach (var c in compChunks)
         {
-            await dataServices.RaceStartNumberDataService.AddBulkAsync(chunk.ToList());
+            await dataServices.CompetitionDataService.AddBulkAsync(c.ToList());
             bar.Tick();
         }
 
-        foreach (var chunk in raceResultChunks)
+        foreach (var r in raceChunks)
         {
-            await dataServices.RaceResultDataService.AddBulkAsync(chunk.ToList());
+            await dataServices.RaceDataService.AddBulkAsync(r.ToList());
             bar.Tick();
         }
 
-        foreach (var chunk in startNumberDriverUpdateChunks)
+        foreach (var rsnCreate in rsnCreateChunks)
         {
-            await dataServices.RaceStartNumberDataService.UpdateDriversBulkAsync(chunk.ToList());
+            await dataServices.RaceStartNumberDataService.BulkAddAsync(rsnCreate.ToList());
             bar.Tick();
         }
 
-        foreach (var chunk in startNumberHorseUpdateChunks)
+        foreach (var rsnDriver in rsnDriverChunks)
         {
-            await dataServices.RaceStartNumberDataService.UpdateHorsesBulkAsync(chunk.ToList());
+            await dataServices.RaceStartNumberDataService.BulkUpdateDriversAsync(rsnDriver.ToList());
             bar.Tick();
         }
+
+        foreach (var rsnHorse in rsnHorseChunks)
+        {
+            await dataServices.RaceStartNumberDataService.BulkUpdateHorsesAsync(rsnHorse.ToList());
+            bar.Tick();
+        }
+
+        foreach (var res in resultChunks)
+        {
+            await dataServices.RaceResultDataService.AddBulkAsync(res.ToList());
+            bar.Tick();
+        }
+
         
-        _startNumbersToCreate.Clear();
-        _raceResultsToCreate.Clear();
-        _startNumbersUpdateDriver.Clear();
-        _startNumbersUpdateHorse.Clear();
+
+
     }
     /// <summary>
     /// Iterate collected result data and updates both driver and horse buffers;

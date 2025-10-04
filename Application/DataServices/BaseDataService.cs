@@ -20,8 +20,14 @@ public class BaseDataService<TModel>(
 
     public async Task AddAsync(TModel model)
     {
-        await dbService.AddAsync(model);
+        await dbService.InsertAsync(model);
         cacheService.AddSingle(model);
+    }
+
+    public async Task AddBulkAsync(List<TModel> models)
+    {
+        await dbService.BulkInsertAsync(models);
+        cacheService.AddRange(models);
     }
 }
     

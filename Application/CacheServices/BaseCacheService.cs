@@ -60,7 +60,7 @@ public class BaseCacheService<TModel> : IBaseCacheService<TModel>
     /// </summary>
     public TModel GetModel(string key)
     {
-        return CheckKeyExists(key) ? _cache[key] : throw new Exception("Key not found");
+        return _cache[key];
     }
 
     public Dictionary<string, TModel> GetFullCache()

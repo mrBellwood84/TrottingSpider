@@ -39,11 +39,10 @@ public class Pipeline(
             var calendarLinks = await calendarStep.RunAsync();
             
             // collect startlists and results data
-            var startlistResultStep = new StartlistResultsCollectionStep(browserOptions, calendarLinks,
-                dataServices, bufferDataService);
+            var startlistResultStep = new StartlistResultsCollectionStep(browserOptions, calendarLinks, bufferDataService);
             await startlistResultStep.RunAsync();
             
-            var driverAndHorsesStep = new DriverAndHorseStep(browserOptions, scraperSettings, 
+            var driverAndHorsesStep = new DriverAndHorseStep(browserOptions, scraperSettings,
                 dataServices, bufferDataService);
             await driverAndHorsesStep.RunAsync();
             

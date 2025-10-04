@@ -14,24 +14,24 @@ public class RaceStartNumberDataService(
     BaseDataService<RaceStartNumber>(dbService, cacheService), IRaceStartNumberDataService
 {
     private readonly IBaseCacheService<RaceStartNumber> _cacheService = cacheService;
+    private readonly IBaseDbService<RaceStartNumber> _dbService = dbService;
 
-
-    public async Task AddBulkAsync(List<RaceStartNumber> data)
+    public async Task BulkAddAsync(List<RaceStartNumber> data)
     {
-        await dbServiceExtension.InsertBulkAsync(data);
+        await _dbService.BulkInsertAsync(data);
         _cacheService.AddRange(data);
     }
 
     public async Task UpdateAsync(RaceStartNumberUpdate data) => await dbServiceExtension.UpdateAsync(data);
 
-    public async Task UpdateDriversBulkAsync(List<RaceStartNumberUpdateDriver> data)
+    public async Task BulkUpdateDriversAsync(List<RaceStartNumberUpdateDriver> data)
     {
-        await dbServiceExtension.UpdateBulkDriversAsync(data);
+        await dbServiceExtension.BulkUpdateDriversAsync(data);
     }
 
-    public async Task UpdateHorsesBulkAsync(List<RaceStartNumberUpdateHorse> data)
+    public async Task BulkUpdateHorsesAsync(List<RaceStartNumberUpdateHorse> data)
     {
-        await dbServiceExtension.UpdateHorsesBulkAsync(data);
+        await dbServiceExtension.BulkUpdateHorsesAsync(data);
     }
     
 }

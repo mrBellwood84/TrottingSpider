@@ -1,9 +1,10 @@
-﻿namespace Application.DataServices.Interfaces;
+﻿namespace Application.DataServices;
 
 public interface IBaseDataService<TModel>
 {
-    public Task InitCache();
-    public bool CheckExists(string key);
-    public TModel GetModel(string key);
-    public Task AddAsync(TModel model);
+    Task InitCache();
+    bool CheckExists(string key);
+    TModel GetModel(string key);
+    Task AddAsync(TModel model);
+    Task AddBulkAsync(List<TModel> models);
 }

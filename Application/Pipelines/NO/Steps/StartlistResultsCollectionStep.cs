@@ -10,7 +10,6 @@ namespace Application.Pipelines.NO.Steps;
 public class StartlistResultsCollectionStep(
     BrowserOptions browserOptions,
     List<CalendarLinks> calendarLinks,
-    IDataServiceCollection dataServices,
     IBufferDataService bufferDataService)
 {
     public readonly List<StartlistScrapeData> StartlistDataCollected = [];

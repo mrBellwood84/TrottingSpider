@@ -20,9 +20,17 @@ public class BaseDbService<TModel>(
         return result.ToList();
     }
 
-    public async Task AddAsync(TModel model)
+    public async Task InsertAsync(TModel model)
     {
         await using var connection = CreateConnection();
         await connection.ExecuteAsync(InsertCommand, model);
+    }
+    
+    public async Task BulkInsertAsync(List<TModel> models)
+    {
+        await using var connection = CreateConnection();
+        await using var trans = await connection.BeginTransactionAsync();
+        await connection.ExecuteAsync(InsertCommand, models, transaction: trans);
+        await trans.CommitAsync();
     }
 }

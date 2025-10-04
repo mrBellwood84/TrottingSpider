@@ -4,5 +4,4 @@ internal enum CreateUpdateOptions
 {
     Create,
     Update,
-    Ignore,
 }
