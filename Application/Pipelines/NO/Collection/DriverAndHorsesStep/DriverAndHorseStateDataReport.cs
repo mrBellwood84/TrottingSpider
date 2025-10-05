@@ -16,15 +16,15 @@ internal struct DriverAndHorseStateDataReport
     public void Report()
     {
         Console.WriteLine("\n\n");
-        if (NewDrivers > 0) AppLogger.LogPositive($"Drivers created: {NewDrivers}");
-        if (NewHorses > 0) AppLogger.LogPositive($"Horses created: {NewHorses}");
-        if (NewDriverLicenses > 0) AppLogger.LogPositive($"Driver licenses created: {NewDriverLicenses}");
-        if (NewRacecourses > 0) AppLogger.LogPositive($"Racecourses created: {NewRacecourses}");
-        if (NewCompetition > 0) AppLogger.LogPositive($"Competition created: {NewCompetition}");
-        if (NewRaces > 0) AppLogger.LogPositive($"Races created: {NewRaces}");
-        if (StartnumberCreated > 0) AppLogger.LogPositive($"New start numbers created: {StartnumberCreated}");
-        if (StartnumberUpdatedDriver > 0) AppLogger.LogPositive($"Drivers results updated: {StartnumberUpdatedDriver}");
-        if (StartnumberUpdatedHorses > 0) AppLogger.LogPositive($"Horses results updated: {StartnumberUpdatedHorses}");
+        if (NewDrivers > 0) AppLogger.AppLogger.LogPositive($"Drivers created: {NewDrivers}");
+        if (NewHorses > 0) AppLogger.AppLogger.LogPositive($"Horses created: {NewHorses}");
+        if (NewDriverLicenses > 0) AppLogger.AppLogger.LogPositive($"Driver licenses created: {NewDriverLicenses}");
+        if (NewRacecourses > 0) AppLogger.AppLogger.LogPositive($"Racecourses created: {NewRacecourses}");
+        if (NewCompetition > 0) AppLogger.AppLogger.LogPositive($"Competition created: {NewCompetition}");
+        if (NewRaces > 0) AppLogger.AppLogger.LogPositive($"Races created: {NewRaces}");
+        if (StartnumberCreated > 0) AppLogger.AppLogger.LogPositive($"New start numbers created: {StartnumberCreated}");
+        if (StartnumberUpdatedDriver > 0) AppLogger.AppLogger.LogPositive($"Drivers results updated: {StartnumberUpdatedDriver}");
+        if (StartnumberUpdatedHorses > 0) AppLogger.AppLogger.LogPositive($"Horses results updated: {StartnumberUpdatedHorses}");
         
         NewDrivers = 0;
         NewHorses = 0;

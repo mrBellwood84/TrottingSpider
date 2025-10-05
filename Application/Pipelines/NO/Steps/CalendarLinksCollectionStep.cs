@@ -1,4 +1,4 @@
-﻿using Application.DataServices.Interfaces;
+﻿using Application.DataServices;
 using Models.DbModels;
 using Models.Settings;
 using Scraping.Processors;
@@ -9,7 +9,7 @@ namespace Application.Pipelines.NO.Steps;
 
 public class CalendarLinksCollectionStep(
     BrowserOptions browserOptions,
-    IDataServiceCollection dataServices,
+    IDataServiceRegistry dataServices,
     CalendarDateMonthOptions calendarOptions
     )
 {
@@ -17,7 +17,7 @@ public class CalendarLinksCollectionStep(
 
     public async Task<List<CalendarLinks>> RunAsync()
     {
-        AppLogger.LogSubheader("Collecting links");
+        AppLogger.AppLogger.LogSubheader("Collecting links");
         // create bot and processor
         var bot = new CalendarCollectorBot(browserOptions, calendarOptions.Year, calendarOptions.Month);
         var processor = new CalendarDataProcessor();
@@ -41,7 +41,7 @@ public class CalendarLinksCollectionStep(
                 await dataServices.RaceCourseDataService.AddAsync(new Racecourse
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = processed.RaceCourseName,
+                    Name = processed.RaceCourseName
                 });
             }
             
@@ -67,7 +67,7 @@ public class CalendarLinksCollectionStep(
         }
         
         // log and process data
-        AppLogger.LogNeutral($"Start number and result links collected: {_processedData.Count}");
+        AppLogger.AppLogger.LogNeutral($"Start number and result links collected: {_processedData.Count}");
         return _processedData;
     }
 }

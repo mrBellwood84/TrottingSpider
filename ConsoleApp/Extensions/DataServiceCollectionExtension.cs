@@ -1,6 +1,4 @@
-﻿using Application.CacheServices;
-using Application.DataServices;
-using Application.DataServices.Interfaces;
+﻿using Application.DataServices;
 using Application.DataServices.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Models.DbModels;
@@ -23,7 +21,7 @@ public static class DataServiceCollectionExtension
         services.AddScoped<IRaceStartNumberDataService, RaceStartNumberDataService>();
         
         // add collection
-        services.AddScoped<IDataServiceCollection, DataServiceCollection>();
+        services.AddScoped<IDataServiceRegistry, DataServiceRegistry>();
         
         return services;
     }

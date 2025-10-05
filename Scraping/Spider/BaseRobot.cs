@@ -32,7 +32,7 @@ public class BaseRobot
         return new BrowserTypeLaunchOptions
         {
             Headless = options.Headless,
-            SlowMo = options.SlowMo,
+            SlowMo = options.SlowMo
         };
     }
 }

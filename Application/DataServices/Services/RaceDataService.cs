@@ -5,7 +5,6 @@ using Persistence.Interfaces;
 namespace Application.DataServices.Services;
 
 public class RaceDataService(
-    IBaseDbService<Race> dbService, 
-    IBaseCacheService<Race> cacheService) 
-    : BaseDataService<Race>(dbService, cacheService)
-{ }
+    IBaseDbService<Race> dbService,
+    IBaseCacheService<Race> cacheService)
+    : BaseDataService<Race>(dbService, cacheService);

@@ -1,4 +1,4 @@
-﻿using Application.DataServices.Interfaces;
+﻿using Application.DataServices;
 using Application.Pipelines.NO.Collection.DriverAndHorsesStep;
 using Models.DbModels;
 using Models.DbModels.Updates;
@@ -14,7 +14,7 @@ namespace Application.Pipelines.NO.Steps;
 public class DriverAndHorseStep(
     BrowserOptions browserOptions,
     ScraperSettings scraperSettings,
-    IDataServiceCollection dataServices,
+    IDataServiceRegistry dataServices,
     IBufferDataService bufferService)
 {
     private const int DriverBatchSize = 4;
@@ -40,8 +40,8 @@ public class DriverAndHorseStep(
         // clear driver and horse buffer here
         while (_driversToCollect.Count > 0 || _horsesToCollect.Count > 0)
         {
-            AppLogger.LogSubheader($"Resolving drivers : ({_driversToCollect.Count} / {bufferService.DriverBuffer.Count}) " +
-                                   $"| horses: ({_horsesToCollect.Count} / {bufferService.HorseBuffer.Count})");
+            AppLogger.AppLogger.LogSubheader($"Resolving drivers : ({_driversToCollect.Count} / {bufferService.DriverBuffer.Count}) " +
+                                             $"| horses: ({_horsesToCollect.Count} / {bufferService.HorseBuffer.Count})");
             
             // process data buffers
             await ProcessDriverBuffer();
@@ -124,8 +124,9 @@ public class DriverAndHorseStep(
         await semaphore.WaitAsync();
         try
         {
-            bool complete = false;
-            int treshhold = 0;
+            var complete = false;
+            var tries = 0;
+            var treshhold = 10;
 
             while (!complete)
             {
@@ -137,7 +138,8 @@ public class DriverAndHorseStep(
                 }
                 catch (NoPanelButtonException ex)
                 {
-                    if (++treshhold > 5) throw new Exception("Unable to collect driver data", ex);
+                    if (++tries > treshhold) throw new Exception($"Unable to collect driver data :: Source id {sourceId}", ex);
+                    Thread.Sleep(5000);
                 }
             }
         }
@@ -260,10 +262,10 @@ public class DriverAndHorseStep(
                     _dataReport.StartnumberCreated++;
                     break;
                 case CreateUpdateOptions.Update:
-                    _raceDataContainer.StartNumbersUpdateDriver.Add(new RaceStartNumberUpdateDriver()
+                    _raceDataContainer.StartNumbersUpdateDriver.Add(new RaceStartNumberUpdateDriver
                     {
                         Id = data.StartNumberData.Id,
-                        DriverId = data.StartNumberData.DriverId,
+                        DriverId = data.StartNumberData.DriverId
                     });
                     _dataReport.StartnumberUpdatedDriver++;
                     break;
@@ -294,10 +296,10 @@ public class DriverAndHorseStep(
                     _dataReport.StartnumberCreated++;
                     break;
                 case CreateUpdateOptions.Update:
-                    _raceDataContainer.StartNumbersUpdateHorse.Add(new RaceStartNumberUpdateHorse()
+                    _raceDataContainer.StartNumbersUpdateHorse.Add(new RaceStartNumberUpdateHorse
                     {
                         Id = data.StartNumberData.Id,
-                        HorseId = data.StartNumberData.HorseId,
+                        HorseId = data.StartNumberData.HorseId
                     });
                     _dataReport.StartnumberUpdatedHorses++;
                     break;
@@ -321,10 +323,10 @@ public class DriverAndHorseStep(
 
         if (!racecourseExists)
         {
-            await dataServices.RaceCourseDataService.AddAsync(new Racecourse()
+            await dataServices.RaceCourseDataService.AddAsync(new Racecourse
             {
                 Id = Guid.NewGuid().ToString(),
-                Name = racecourseNorm,
+                Name = racecourseNorm
             });
             _dataReport.NewRacecourses++;
         }
@@ -335,16 +337,16 @@ public class DriverAndHorseStep(
         var date = FormatDateString(resultData.Date);
         var competitionKey = $"{racecourseId}_{date}";
         
-        bool competitionDbExists = dataServices.CompetitionDataService.CheckExists(competitionKey);
-        bool competitionTempExists = _raceDataContainer.Competitions.ContainsKey(competitionKey);
+        var competitionDbExists = dataServices.CompetitionDataService.CheckExists(competitionKey);
+        var competitionTempExists = _raceDataContainer.Competitions.ContainsKey(competitionKey);
 
         if (!competitionDbExists && !competitionTempExists)
         {
-            _raceDataContainer.Competitions.Add(competitionKey, new Competition()
+            _raceDataContainer.Competitions.Add(competitionKey, new Competition
             {
                 Id = Guid.NewGuid().ToString(),
                 RaceCourseId = racecourseId,
-                Date = date,
+                Date = date
             });
             _dataReport.NewCompetition++;
         }
@@ -358,17 +360,17 @@ public class DriverAndHorseStep(
         var raceNumber = int.Parse(resultData.RaceNumber);
         var raceKey = $"{competitionId}_{raceNumber}";
         
-        bool raceDbExists = dataServices.RaceDataService.CheckExists(raceKey);
-        bool raceTempExists = _raceDataContainer.Races.ContainsKey(raceKey);
+        var raceDbExists = dataServices.RaceDataService.CheckExists(raceKey);
+        var raceTempExists = _raceDataContainer.Races.ContainsKey(raceKey);
 
         if (!raceDbExists && !raceTempExists)
         {
-            _raceDataContainer.Races.Add(raceKey, new Race()
+            _raceDataContainer.Races.Add(raceKey, new Race
             {
                 Id = Guid.NewGuid().ToString(),
                 CompetitionId = competitionId,
                 RaceNumber = raceNumber,
-                Distance = int.TryParse(resultData.Distance, out var d1) ? d1 : -1,
+                Distance = int.TryParse(resultData.Distance, out var d1) ? d1 : -1
             });
             _dataReport.NewRaces++;
         }
@@ -387,7 +389,7 @@ public class DriverAndHorseStep(
         var raceStartNumber = raceStartNumberInDbExists ? 
             dataServices.RaceStartNumberDataService.GetModel(raceStartNumberKey) :
             (raceStartNumberTempExists ? _raceDataContainer.AllStartNumbers[raceStartNumberKey] : 
-                new RaceStartNumber()
+                new RaceStartNumber
                 {
                     Id = Guid.NewGuid().ToString(),
                     RaceId = raceId,
@@ -397,7 +399,7 @@ public class DriverAndHorseStep(
                     ForeShoe = ResolveForeShoe(resultData.ForeShoe),
                     HindShoe = ResolveHindShoe(resultData.HindShoe),
                     Cart = resultData.Cart,
-                    FromDirectSource = false,  
+                    FromDirectSource = false
                 });
         
         // resolve race startnumber here
@@ -406,7 +408,7 @@ public class DriverAndHorseStep(
         
         if (!raceResultInDbExists && !raceResultTempExists)
         {
-            var data = new RaceResult()
+            var data = new RaceResult
             {
                 Id = Guid.NewGuid().ToString(),
                 RaceStartNumberId = raceStartNumber.Id,
@@ -416,7 +418,7 @@ public class DriverAndHorseStep(
                 KmTime = resultData.KmTime,
                 RRemark = resultData.RRemark,
                 GRemark = resultData.GRemark,
-                FromDirectSource = false,
+                FromDirectSource = false
             };
             _raceDataContainer.RaceResultsCreate.Add(data);
             _raceDataContainer.RaceResultKeys.Add(raceStartNumber.Id);
@@ -562,7 +564,7 @@ public class DriverAndHorseStep(
         {
             ForegroundColor = ConsoleColor.DarkCyan,
             BackgroundColor = ConsoleColor.White,
-            ForegroundColorDone = ConsoleColor.DarkCyan,
+            ForegroundColorDone = ConsoleColor.DarkCyan
         };
     }
 }

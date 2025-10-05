@@ -1,9 +1,7 @@
 ﻿using Application.CacheServices.Interfaces;
-using Application.DataServices.Interfaces;
 using Models.DbModels;
 using Models.DbModels.Updates;
 using Persistence.Interfaces;
-using Persistence.Services.Extensions;
 
 namespace Application.DataServices.Services;
 

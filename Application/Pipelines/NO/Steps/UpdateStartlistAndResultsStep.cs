@@ -1,5 +1,4 @@
 ﻿using Application.DataServices;
-using Application.DataServices.Interfaces;
 using Application.Pipelines.NO.Collection.UpdateStartlistAndResultStep;
 using Models.DbModels.Updates;
 using Models.ScrapeData;
@@ -8,18 +7,18 @@ using ShellProgressBar;
 namespace Application.Pipelines.NO.Steps;
 
 public class UpdateStartlistAndResultsStep(
-    IDataServiceCollection dataServiceCollection,
+    IDataServiceRegistry dataServiceRegistry,
     List<StartlistScrapeData> startlistScrapeData,
     List<ResultScrapeData> resultScrapeData)
 {
 
-    private UpdateStartlistAndResultReport Report = new UpdateStartlistAndResultReport();
-    private readonly IDataServiceCollection _dataServiceCollection = dataServiceCollection;
+    private UpdateStartlistAndResultReport _report = new();
+    private IDataServiceRegistry _dataServiceRegistry = dataServiceRegistry;
 
     public async Task RunAsync()
     {
         
-        if ((startlistScrapeData.Count + resultScrapeData.Count)  == 0) return;
+        if (startlistScrapeData.Count + resultScrapeData.Count  == 0) return;
         
         var count = startlistScrapeData.Count +  resultScrapeData.Count;
         var message = "Updating startlists and results list";
@@ -38,121 +37,121 @@ public class UpdateStartlistAndResultsStep(
             bar.Tick();
         }
         
-        Report.Report();
+        _report.Report();
     }
 
     private async Task ParseStartlistData(StartlistScrapeData rawData)
     {
         var racecourseNorm = rawData.RaceCourse.ToUpper();
-        var racecourseExists = _dataServiceCollection.RaceCourseDataService.CheckExists(racecourseNorm);
+        var racecourseExists = _dataServiceRegistry.RaceCourseDataService.CheckExists(racecourseNorm);
         if (!racecourseExists)
         {
-            Report.StartlistNoRacecourse++;
+            _report.StartlistNoRacecourse++;
             return;
         }
-        var racecourseId = _dataServiceCollection.RaceCourseDataService.GetModel(racecourseNorm).Id;
+        var racecourseId = _dataServiceRegistry.RaceCourseDataService.GetModel(racecourseNorm).Id;
 
         var competitionKey = $"{racecourseId}_{rawData.Date}";
-        var competitionExists = _dataServiceCollection.CompetitionDataService.CheckExists(competitionKey);
+        var competitionExists = _dataServiceRegistry.CompetitionDataService.CheckExists(competitionKey);
         if (!competitionExists)
         {
-            Report.StartlistNoCompetition++;
+            _report.StartlistNoCompetition++;
             return;
         }
-        var competitionId = _dataServiceCollection.CompetitionDataService.GetModel(competitionKey).Id;
+        var competitionId = _dataServiceRegistry.CompetitionDataService.GetModel(competitionKey).Id;
         
         var raceNumber = int.Parse(rawData.RaceNumber.Split("-")[1]);
         var raceKey = $"{competitionId}_{raceNumber}";
-        var raceExists = _dataServiceCollection.RaceDataService.CheckExists(raceKey);
+        var raceExists = _dataServiceRegistry.RaceDataService.CheckExists(raceKey);
         if (!raceExists)
         {
-            Report.StartlistNoRace++;
+            _report.StartlistNoRace++;
             return;
         }
-        var raceId = _dataServiceCollection.RaceDataService.GetModel(raceKey).Id;
+        var raceId = _dataServiceRegistry.RaceDataService.GetModel(raceKey).Id;
 
         var startnumberKey = $"{raceId}_{rawData.StartNumber}";
-        var startnumberExists = _dataServiceCollection.RaceStartNumberDataService.CheckExists(startnumberKey);
+        var startnumberExists = _dataServiceRegistry.RaceStartNumberDataService.CheckExists(startnumberKey);
         if (!startnumberExists)
         {
-            Report.StartlistNoStartnumber++;
+            _report.StartlistNoStartnumber++;
             return;
         }
-        var startnumberId = _dataServiceCollection.RaceStartNumberDataService.GetModel(startnumberKey).Id;
+        var startnumberId = _dataServiceRegistry.RaceStartNumberDataService.GetModel(startnumberKey).Id;
         
-        var entity = _dataServiceCollection.RaceStartNumberDataService.GetModel(startnumberKey);
+        var entity = _dataServiceRegistry.RaceStartNumberDataService.GetModel(startnumberKey);
         if (entity.FromDirectSource) return;
             
 
-        var updateItem = new RaceStartNumberUpdate()
+        var updateItem = new RaceStartNumberUpdate
         {
             Id = startnumberId,
             Auto = rawData.Auto,
             Turn = rawData.Turn,
-            HasGambling = rawData.HasGambling,
+            HasGambling = rawData.HasGambling
         };
         
-        await _dataServiceCollection.RaceStartNumberDataService.UpdateAsync(updateItem);
-        Report.StartlistUpdated++;
+        await _dataServiceRegistry.RaceStartNumberDataService.UpdateAsync(updateItem);
+        _report.StartlistUpdated++;
     }
 
     private async Task ParseResultsData(ResultScrapeData rawData)
     {
         var racecourseNorm = rawData.RaceCourse.ToUpper();
-        var racecourseExists = _dataServiceCollection.RaceCourseDataService.CheckExists(racecourseNorm);
+        var racecourseExists = _dataServiceRegistry.RaceCourseDataService.CheckExists(racecourseNorm);
         if (!racecourseExists)
         {
-            Report.ResultNoRacecourse++;
+            _report.ResultNoRacecourse++;
             return;
         }
-        var racecourseId = _dataServiceCollection.RaceCourseDataService.GetModel(racecourseNorm).Id;
+        var racecourseId = _dataServiceRegistry.RaceCourseDataService.GetModel(racecourseNorm).Id;
 
         var competitionKey = $"{racecourseId}_{rawData.Date}";
-        var competitionExists = _dataServiceCollection.CompetitionDataService.CheckExists(competitionKey);
+        var competitionExists = _dataServiceRegistry.CompetitionDataService.CheckExists(competitionKey);
         if (!competitionExists)
         {
-            Report.ResultNoCompetition++;
+            _report.ResultNoCompetition++;
             return;
         }
-        var competitionId = _dataServiceCollection.CompetitionDataService.GetModel(competitionKey).Id;
+        var competitionId = _dataServiceRegistry.CompetitionDataService.GetModel(competitionKey).Id;
         
         var raceNumber = int.Parse(rawData.RaceNumber.Split("-")[1]);
         var raceKey = $"{competitionId}_{raceNumber}";
-        var raceExists = _dataServiceCollection.RaceDataService.CheckExists(raceKey);
+        var raceExists = _dataServiceRegistry.RaceDataService.CheckExists(raceKey);
         if (!raceExists)
         {
-            Report.ResultNoRace++;
+            _report.ResultNoRace++;
             return;
         }
-        var raceId = _dataServiceCollection.RaceDataService.GetModel(raceKey).Id;
+        var raceId = _dataServiceRegistry.RaceDataService.GetModel(raceKey).Id;
 
         var startnumberKey = $"{raceId}_{rawData.StartNumber}";
-        var startnumberExists = _dataServiceCollection.RaceStartNumberDataService.CheckExists(startnumberKey);
+        var startnumberExists = _dataServiceRegistry.RaceStartNumberDataService.CheckExists(startnumberKey);
         if (!startnumberExists)
         {
-            Report.ResultNoStartnumber++;
+            _report.ResultNoStartnumber++;
             return;
         }
-        var startnumberId = _dataServiceCollection.RaceStartNumberDataService.GetModel(startnumberKey).Id;
+        var startnumberId = _dataServiceRegistry.RaceStartNumberDataService.GetModel(startnumberKey).Id;
         
-        var raceResultExist = _dataServiceCollection.RaceResultDataService.CheckExists(startnumberId);
+        var raceResultExist = _dataServiceRegistry.RaceResultDataService.CheckExists(startnumberId);
         if (!raceResultExist)
         {
-            Report.ResultNoResults++;
+            _report.ResultNoResults++;
             return;
         }
-        var raceResultId = _dataServiceCollection.RaceResultDataService.GetModel(startnumberId).Id;
-        var entity = _dataServiceCollection.RaceResultDataService.GetModel(startnumberId);
+        var raceResultId = _dataServiceRegistry.RaceResultDataService.GetModel(startnumberId).Id;
+        var entity = _dataServiceRegistry.RaceResultDataService.GetModel(startnumberId);
         if (entity.FromDirectSource) return;
 
-        var updateItem = new RaceResultUpdate()
+        var updateItem = new RaceResultUpdate
         {
             Id = raceResultId,
-            Time = rawData.Time,
+            Time = rawData.Time
         };
         
-        await _dataServiceCollection.RaceResultDataService.UpdateAsync(updateItem);
-        Report.ResultUpdated++;
+        await _dataServiceRegistry.RaceResultDataService.UpdateAsync(updateItem);
+        _report.ResultUpdated++;
     }
     
     private ProgressBarOptions CreateProgressBarOptions()
@@ -161,7 +160,7 @@ public class UpdateStartlistAndResultsStep(
         {
             ForegroundColor = ConsoleColor.DarkCyan,
             BackgroundColor = ConsoleColor.White,
-            ForegroundColorDone = ConsoleColor.DarkCyan,
+            ForegroundColorDone = ConsoleColor.DarkCyan
         };
     }
 }

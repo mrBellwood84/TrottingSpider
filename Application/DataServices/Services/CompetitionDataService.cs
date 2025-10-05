@@ -7,5 +7,4 @@ namespace Application.DataServices.Services;
 public class CompetitionDataService(
     IBaseDbService<Competition> dbService, 
     IBaseCacheService<Competition> cacheService) 
-    : BaseDataService<Competition>(dbService, cacheService)
-{ }
+    : BaseDataService<Competition>(dbService, cacheService);

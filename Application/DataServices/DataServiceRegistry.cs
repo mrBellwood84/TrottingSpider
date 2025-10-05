@@ -1,10 +1,8 @@
-﻿using Application.DataServices.Interfaces;
-using Application.DataServices.Services;
-using Models.DbModels;
+﻿using Models.DbModels;
 
 namespace Application.DataServices;
 
-public class DataServiceCollection(
+public class DataServiceRegistry(
     IBaseDataService<Competition> competitionDataService,
     IDriverDataService driverDataService,
     IBaseDataService<DriverLicense> driverLicenseDataService,
@@ -12,7 +10,7 @@ public class DataServiceCollection(
     IBaseDataService<Race> raceDataService,
     IBaseDataService<Racecourse> raceCourseDataService,
     IRaceResultDataService raceResultDataService,
-    IRaceStartNumberDataService raceStartNumberDataService) : IDataServiceCollection
+    IRaceStartNumberDataService raceStartNumberDataService) : IDataServiceRegistry
 {
     public IBaseDataService<Competition> CompetitionDataService { get; } = competitionDataService;
     public IDriverDataService DriverDataService { get; } = driverDataService;
@@ -38,6 +36,6 @@ public class DataServiceCollection(
         ];
         
         await Task.WhenAll(tasks);
-        AppLogger.LogNeutral("Data cache initialized.");
+        AppLogger.AppLogger.LogNeutral("Data cache initialized.");
     }
 }

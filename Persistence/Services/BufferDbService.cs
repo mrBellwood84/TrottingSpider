@@ -1,5 +1,4 @@
-﻿using System.Security.Permissions;
-using Dapper;
+﻿using Dapper;
 using Models.DbModels;
 using Models.Settings;
 using Persistence.Interfaces;

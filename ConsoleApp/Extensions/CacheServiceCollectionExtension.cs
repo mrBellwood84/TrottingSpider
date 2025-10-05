@@ -1,5 +1,4 @@
-﻿using Application.CacheServices;
-using Application.CacheServices.Interfaces;
+﻿using Application.CacheServices.Interfaces;
 using Application.CacheServices.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Models.DbModels;

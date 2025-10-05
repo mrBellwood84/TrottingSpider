@@ -1,9 +1,8 @@
-﻿using Application.DataServices.Services;
-using Models.DbModels;
+﻿using Models.DbModels;
 
-namespace Application.DataServices.Interfaces;
+namespace Application.DataServices;
 
-public interface IDataServiceCollection
+public interface IDataServiceRegistry
 {
     IBaseDataService<Competition> CompetitionDataService { get; }
     IDriverDataService DriverDataService { get; }

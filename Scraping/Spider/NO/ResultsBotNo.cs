@@ -15,7 +15,7 @@ public class ResultsBotNo(BrowserOptions options, string url) : BaseRobot(option
     private string Url { get; } = url;
     
     // list of data collected
-    public List<ResultScrapeData> DataCollected = [];
+    public readonly List<ResultScrapeData> DataCollected = [];
 
     public async Task Execute(IPage page)
     {
@@ -69,7 +69,7 @@ public class ResultsBotNo(BrowserOptions options, string url) : BaseRobot(option
                     Place = place!.Trim(),
                     Time = time!.Trim(),
                     KmTime = kmTime!.Trim(),
-                    FromDirectSource = true,
+                    FromDirectSource = true
                 };
 
                 DataCollected.Add(item);
@@ -84,8 +84,8 @@ public class ResultsBotNo(BrowserOptions options, string url) : BaseRobot(option
     {
         var spaceSplit = elementText.Split(' ');
         var length = spaceSplit.Length - 4;
-        var subArray = spaceSplit[0..length];
-        return String.Join(" ", subArray).Trim();
+        var subArray = spaceSplit[..length];
+        return string.Join(" ", subArray).Trim();
     }   
     
     /// <summary>

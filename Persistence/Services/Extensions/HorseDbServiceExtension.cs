@@ -8,7 +8,7 @@ namespace Persistence.Services.Extensions;
 public class HorseDbServiceExtension(DbConnectionStrings dbConnectionStrings) 
     : DbConnection(dbConnectionStrings), IHorseDbServiceExtension
 {
-    private readonly string _queryBySourceId = "SELECT * FROM horse where SourceId = @SourceId";
+    private const string _queryBySourceId = "SELECT * FROM horse where SourceId = @SourceId";
 
     public async Task<List<Horse>> QueryBySourceId(string sourceId)
     {

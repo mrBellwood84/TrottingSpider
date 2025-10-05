@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Models.DbModels;
 using Models.DbModels.Updates;
 using Models.Settings;
 using Persistence.Interfaces;

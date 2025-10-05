@@ -16,7 +16,7 @@ public class ProcessDriverScrapeData
             Id = Guid.NewGuid().ToString(),
             SourceId = rawData.SourceId,
             Name = rawData.Name,
-            YearOfBirth = _parseYearOfBirth(rawData.YearOfBirth),
+            YearOfBirth = _parseYearOfBirth(rawData.YearOfBirth)
         };
     }}
     
@@ -42,7 +42,7 @@ public class ProcessDriverScrapeData
             {
                 Id = Guid.NewGuid().ToString(),
                 Code = code,
-                Description = splitted[1].Trim(),
+                Description = splitted[1].Trim()
             };
 
             return NewDriverLicense;
@@ -53,8 +53,7 @@ public class ProcessDriverScrapeData
         {
             Id = Guid.NewGuid().ToString(),
             Code = "-",
-            Description = "Ikke gyldig lisens",
+            Description = "Ikke gyldig lisens"
         };
-
     }
 }

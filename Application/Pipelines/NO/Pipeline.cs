@@ -1,9 +1,6 @@
-﻿using Application.DataServices.Interfaces;
+﻿using Application.DataServices;
 using Application.Pipelines.NO.Steps;
-using Models.DbModels;
-using Models.ScrapeData;
 using Models.Settings;
-using Scraping.Spider.NO;
 using Scraping.Spider.NO.Options;
 
 namespace Application.Pipelines.NO;
@@ -11,7 +8,7 @@ namespace Application.Pipelines.NO;
 public class Pipeline(
     BrowserOptions browserOptions,
     ScraperSettings scraperSettings,
-    IDataServiceCollection dataServices,
+    IDataServiceRegistry dataServices,
     IBufferDataService bufferDataService)
 {
     public async Task RunAsync()
@@ -32,7 +29,7 @@ public class Pipeline(
         
         foreach (var option in _calendarYearMonthOptions())
         { 
-            AppLogger.LogHeader($"Resolving {++count}/{iterations} - {option.Year} - {option.Month}");
+            AppLogger.AppLogger.LogHeader($"Resolving {++count}/{iterations} - {option.Year} - {option.Month}");
             
             // calendar step
             var calendarStep = new CalendarLinksCollectionStep(browserOptions, dataServices, option);
@@ -83,7 +80,7 @@ public class Pipeline(
             var option = new CalendarDateMonthOptions
             {
                 Year = y,
-                Month = m,
+                Month = m
             };
             yield return option;
         }

@@ -1,6 +1,6 @@
 ﻿using Models.DbModels;
 
-namespace Application.DataServices.Interfaces;
+namespace Application.DataServices;
 
 public interface IHorseDataService
 {

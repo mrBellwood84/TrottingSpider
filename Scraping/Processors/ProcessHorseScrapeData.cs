@@ -14,12 +14,12 @@ public class ProcessHorseScrapeData
             SourceId = data.SourceId,
             Name = data.Name,
             Sex = data.Sex,
-            YearOfBirth = _parseYearOfBirth(data.YearOfBirth, data.SourceId)
+            YearOfBirth = _parseYearOfBirth(data.YearOfBirth)
         };
         return horse;
     }
     
-    private int _parseYearOfBirth(string yearOfBirth, string sourceId)
+    private int _parseYearOfBirth(string yearOfBirth)
     {
         try
         {

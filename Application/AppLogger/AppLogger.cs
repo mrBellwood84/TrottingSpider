@@ -1,4 +1,4 @@
-﻿namespace Application;
+﻿namespace Application.AppLogger;
 
 public static class AppLogger
 {

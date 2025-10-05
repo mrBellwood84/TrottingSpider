@@ -1,7 +1,7 @@
 ﻿using Models.DbModels;
 using Models.DbModels.Updates;
 
-namespace Application.DataServices.Interfaces;
+namespace Application.DataServices;
 
 public interface IRaceResultDataService
 {
@@ -10,5 +10,4 @@ public interface IRaceResultDataService
     Task InitCache();
     bool CheckExists(string key);
     RaceResult GetModel(string key);
-    Task AddAsync(RaceResult model);
 }

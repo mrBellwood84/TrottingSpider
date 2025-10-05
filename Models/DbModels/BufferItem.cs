@@ -2,7 +2,7 @@
 
 public class BufferItem
 {
-    public string Id { get; set; }
-    public string SourceId { get; set;  }
-    public bool Collected { get; set; }
+    public string Id { get; init; }
+    public string SourceId { get; init;  }
+    public bool Collected { get; init; }
 }

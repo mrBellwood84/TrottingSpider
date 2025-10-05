@@ -1,4 +1,4 @@
-﻿using Application.DataServices.Interfaces;
+﻿using Application.DataServices;
 using Models.ScrapeData;
 using Models.Settings;
 using Scraping.Spider.NO;
@@ -12,8 +12,8 @@ public class StartlistResultsCollectionStep(
     List<CalendarLinks> calendarLinks,
     IBufferDataService bufferDataService)
 {
-    public readonly List<StartlistScrapeData> StartlistDataCollected = [];
-    public readonly List<ResultScrapeData> ResultDataCollected = [];
+    public List<StartlistScrapeData> StartlistDataCollected { get; } = [];
+    public List<ResultScrapeData> ResultDataCollected { get; } = [];
 
     private readonly HashSet<string> _drivers = [];
     private readonly HashSet<string> _horses = [];
@@ -78,7 +78,7 @@ public class StartlistResultsCollectionStep(
         {
             ForegroundColor = ConsoleColor.DarkCyan,
             BackgroundColor = ConsoleColor.White,
-            ForegroundColorDone = ConsoleColor.DarkCyan,
+            ForegroundColorDone = ConsoleColor.DarkCyan
         };
     }
 }

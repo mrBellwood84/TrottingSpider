@@ -102,8 +102,8 @@ public class StartlistBotNo(BrowserOptions options, string url) : BaseRobot(opti
     {
         var spaceSplit = elementText.Split(' ');
         var length = spaceSplit.Length - 4;
-        var subArray = spaceSplit[0..length];
-        return String.Join(" ", subArray).Trim();
+        var subArray = spaceSplit[..length];
+        return string.Join(" ", subArray).Trim();
     }
     
     /// <summary>

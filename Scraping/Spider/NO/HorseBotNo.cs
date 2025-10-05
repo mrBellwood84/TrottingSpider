@@ -36,7 +36,7 @@ public class HorseBotNo(
     /// <summary>
     /// List of scraped result table data
     /// </summary>
-    public List<ResultScrapeData> RaceDataCollected = [];
+    public List<ResultScrapeData> RaceDataCollected { get; } = [];
 
 
     /// <summary>
@@ -99,7 +99,7 @@ public class HorseBotNo(
             SourceId = horseSourceId,
             Name = name!.Trim(),
             YearOfBirth = yob!.Trim(),
-            Sex = sex!.Trim(),
+            Sex = sex!.Trim()
         };
         
         HorseDataCollected = newItem;
@@ -158,7 +158,7 @@ public class HorseBotNo(
             Odds = odds!,
             RRemark = rRemark!,
             GRemark = gRemark!,
-            FromDirectSource = false,
+            FromDirectSource = false
         };
         return item;
     }

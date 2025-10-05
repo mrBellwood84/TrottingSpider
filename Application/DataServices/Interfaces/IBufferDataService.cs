@@ -1,4 +1,4 @@
-﻿namespace Application.DataServices.Interfaces;
+﻿namespace Application.DataServices;
 
 public interface IBufferDataService
 {

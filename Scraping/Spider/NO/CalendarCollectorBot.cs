@@ -26,9 +26,7 @@ public class CalendarCollectorBot(BrowserOptions options, string year, string mo
     // select box options
     private readonly List<string> _raceCourseOptions  = [];
     
-    // options for collector
-    private readonly string _year = year;
-    private readonly string _month = month;
+
     
     // collected data to be parsed
     public List<CalendarScrapeData> DataCollected { get; } = [];
@@ -43,10 +41,10 @@ public class CalendarCollectorBot(BrowserOptions options, string year, string mo
         await page.GotoAsync(CalendarUrl);
 
         await page.WaitForSelectorAsync(YearSelectXpath);
-        await page.Locator(YearSelectXpath).SelectOptionAsync(_year);
+        await page.Locator(YearSelectXpath).SelectOptionAsync(year);
 
         await page.WaitForSelectorAsync(MonthSelectXpath);
-        await page.Locator(MonthSelectXpath).SelectOptionAsync(_month);
+        await page.Locator(MonthSelectXpath).SelectOptionAsync(month);
 
         if (_raceCourseOptions.Count == 0) await _initRaceCourseOptions(page);
 
@@ -97,10 +95,6 @@ public class CalendarCollectorBot(BrowserOptions options, string year, string mo
                     break;
             }
         }
-
-        if (dateList.Count != dataList.Count)
-            throw new Exception(
-                $"Error occured when parsing race calendar data. Date count was {dateList.Count} and data count was {dataList.Count}");
         
         for (var i = 0; i < dateList.Count; i++)
         {
@@ -113,14 +107,14 @@ public class CalendarCollectorBot(BrowserOptions options, string year, string mo
             try
             {
                 startlistLink = await dataList[i].Locator(StartlistLinkXpath)
-                    .GetAttributeAsync("href", new() { Timeout = 200 });
+                    .GetAttributeAsync("href", new LocatorGetAttributeOptions { Timeout = 200 });
             }
             catch (TimeoutException) {}
 
             try
             {
                resultLink = await dataList[i].Locator(ResultLinkXpath)
-                   .GetAttributeAsync("href", new () { Timeout = 200 }); 
+                   .GetAttributeAsync("href", new LocatorGetAttributeOptions { Timeout = 200 }); 
             }
             catch (TimeoutException) {}
 
@@ -131,7 +125,7 @@ public class CalendarCollectorBot(BrowserOptions options, string year, string mo
                 StartlistHref = startlistLink ?? string.Empty,
                 ResultHref = resultLink ?? string.Empty,
                 StartlistFromSource = false,
-                ResultsFromSource = false,
+                ResultsFromSource = false
             };
                 
             

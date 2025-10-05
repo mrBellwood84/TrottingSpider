@@ -5,15 +5,15 @@ namespace Application.Pipelines.NO.Collection.DriverAndHorsesStep;
 
 public class RaceDataContainer
 {
-    public Dictionary<string, Competition>  Competitions { get; set; } = [];
-    public Dictionary<string, Race> Races { get; set; } = [];
-    public Dictionary<string, RaceStartNumber> AllStartNumbers { get; set; } = [];
-    public HashSet<string> RaceResultKeys { get; set; } = [];
+    public Dictionary<string, Competition>  Competitions { get; } = [];
+    public Dictionary<string, Race> Races { get; } = [];
+    public Dictionary<string, RaceStartNumber> AllStartNumbers { get; } = [];
+    public HashSet<string> RaceResultKeys { get; } = [];
 
-    public List<RaceStartNumber> StartNumbersCreate = [];
-    public List<RaceStartNumberUpdateDriver> StartNumbersUpdateDriver = [];
-    public List<RaceStartNumberUpdateHorse> StartNumbersUpdateHorse = [];
-    public List<RaceResult>  RaceResultsCreate { get; set; } = [];
+    public List<RaceStartNumber> StartNumbersCreate { get; } = [];
+    public List<RaceStartNumberUpdateDriver> StartNumbersUpdateDriver { get; } = [];
+    public List<RaceStartNumberUpdateHorse> StartNumbersUpdateHorse { get; } = [];
+    public List<RaceResult>  RaceResultsCreate { get; } = [];
     
     public void Clear()
     {

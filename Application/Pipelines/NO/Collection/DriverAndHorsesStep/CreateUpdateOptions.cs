@@ -3,5 +3,5 @@
 internal enum CreateUpdateOptions
 {
     Create,
-    Update,
+    Update
 }

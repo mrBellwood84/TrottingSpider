@@ -1,5 +1,4 @@
-﻿using Application.Pipelines;
-using Application.Pipelines.NO;
+﻿using Application.Pipelines.NO;
 using ConsoleApp.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

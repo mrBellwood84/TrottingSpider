@@ -98,7 +98,7 @@ public class DriverBotNo(
             SourceId = driverSourceId,
             Name = name!.Trim(),
             YearOfBirth = yob!.Trim(),
-            DriverLicense = driverLicense!.Trim(),
+            DriverLicense = driverLicense!.Trim()
         };
         DriverDataCollected = newItem;
     }
@@ -153,7 +153,7 @@ public class DriverBotNo(
             Odds = odds!,
             RRemark = rRemark!,
             GRemark = gRemark!,
-            FromDirectSource = false,
+            FromDirectSource = false
         };
         return item;
     }
@@ -195,7 +195,7 @@ public class DriverBotNo(
     {
         try
         {
-            await page.Locator(StartsButtonXpath).ClickAsync();
+            await page.Locator(StartsButtonXpath).ClickAsync(new LocatorClickOptions {Timeout = 5000});
         }
         catch (TimeoutException ex)
         {
