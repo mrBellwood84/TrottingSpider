@@ -1,4 +1,5 @@
-﻿using Application.DataServices;
+﻿using Application.AppLogger;
+using Application.DataServices;
 using Application.Pipelines.NO.Collection.DriverAndHorsesStep;
 using Models.DbModels;
 using Models.DbModels.Updates;
@@ -126,7 +127,7 @@ public class DriverAndHorseStep(
         {
             var complete = false;
             var tries = 0;
-            var treshhold = 10;
+            var treshhold = 5;
 
             while (!complete)
             {
@@ -138,8 +139,14 @@ public class DriverAndHorseStep(
                 }
                 catch (NoPanelButtonException ex)
                 {
-                    if (++tries > treshhold) throw new Exception($"Unable to collect driver data :: Source id {sourceId}", ex);
-                    Thread.Sleep(5000);
+                    if (++tries > treshhold)
+                    {
+                        await FileLogger.AddToDriverNoPanel(sourceId);
+                        await bufferService.RemoveDriverAsync(sourceId);
+                        complete = true;
+                        bar.Tick();
+                    }
+                    Thread.Sleep(2000);
                 }
             }
         }

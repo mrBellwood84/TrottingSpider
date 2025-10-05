@@ -24,6 +24,7 @@ public class DriverDataService(
     public async Task AddDriverToCacheAsync(string sourceId)
     {
         var data = await dbServiceExtension.QueryBySourceId(sourceId);
+        if (data.Count == 0) return;
         _cacheService.AddSingle(data[0]);
     }
 
