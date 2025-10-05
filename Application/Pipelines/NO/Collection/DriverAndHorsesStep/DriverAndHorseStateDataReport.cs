@@ -15,7 +15,7 @@ internal struct DriverAndHorseStateDataReport
 
     public void Report()
     {
-        Console.WriteLine("\n\n");
+        Console.WriteLine("\n");
         if (NewDrivers > 0) AppLogger.AppLogger.LogPositive($"Drivers created: {NewDrivers}");
         if (NewHorses > 0) AppLogger.AppLogger.LogPositive($"Horses created: {NewHorses}");
         if (NewDriverLicenses > 0) AppLogger.AppLogger.LogPositive($"Driver licenses created: {NewDriverLicenses}");

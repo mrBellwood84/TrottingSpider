@@ -137,7 +137,7 @@ public class DriverAndHorseStep(
                     complete = true;
                     bar.Tick();
                 }
-                catch (NoPanelButtonException ex)
+                catch (NoPanelButtonException)
                 {
                     if (++tries > treshhold)
                     {
@@ -220,8 +220,28 @@ public class DriverAndHorseStep(
         await semaphore.WaitAsync();
         try
         {
-            await CollectHorseData(sourceId);
-            bar.Tick();
+            var complete = false;
+            var tries = 0;
+            var treshhold = 5;
+            while (!complete)
+            {
+                try
+                {
+                    await CollectHorseData(sourceId);
+                    complete = true;
+                    bar.Tick();
+                }
+                catch (NoPanelButtonException)
+                {
+                    if (++tries > treshhold)
+                    {
+                        await FileLogger.AddToHorseNoPanel(sourceId);
+                        await bufferService.RemoveHorseAsync(sourceId);
+                        complete = true;
+                        bar.Tick();
+                    }
+                }
+            }
         }
         finally
         {
@@ -500,10 +520,6 @@ public class DriverAndHorseStep(
             await dataServices.RaceResultDataService.AddBulkAsync(res.ToList());
             bar.Tick();
         }
-
-        
-
-
     }
     /// <summary>
     /// Iterate collected result data and updates both driver and horse buffers;

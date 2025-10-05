@@ -1,6 +1,7 @@
 ﻿using Microsoft.Playwright;
 using Models.ScrapeData;
 using Models.Settings;
+using Scraping.Errors;
 
 namespace Scraping.Spider.NO;
 
@@ -169,7 +170,8 @@ public class HorseBotNo(
     private async Task<List<string>> _resolveYearOptions(IPage page)
     {
         var result = new List<string>();
-        await page.Locator(StartsButtonXpath).ClickAsync();
+        // await page.Locator(StartsButtonXpath).ClickAsync();
+        await ClickStartPanelButton(page);
         await page.WaitForSelectorAsync(YearSelectXpath);
         var optionElements  = await page.Locator(YearSelectXpath).Locator("option").AllAsync();
         
@@ -183,7 +185,20 @@ public class HorseBotNo(
             result.Add(value!);
         }
         return result;
-    }    
+    }
+    
+    private async Task ClickStartPanelButton(IPage page)
+    {
+        try
+        {
+            await page.Locator(StartsButtonXpath).ClickAsync(new LocatorClickOptions {Timeout = 5000});
+        }
+        catch (TimeoutException ex)
+        {
+            throw new NoPanelButtonException("Panel button not found!", ex);
+        }
+    }
+    
     
     /// <summary>
     /// Get last part of url string

@@ -24,6 +24,7 @@ public class HorseDataService(
     public async Task AddHorseToCacheAsync(string sourceId)
     {
         var data = await horseDbServiceExtension.QueryBySourceId(sourceId);
+        if (data.Count == 0) return;
         _cacheService.AddSingle(data[0]);
     }
 
