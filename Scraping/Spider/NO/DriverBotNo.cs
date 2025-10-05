@@ -1,6 +1,7 @@
 ﻿using Microsoft.Playwright;
 using Models.ScrapeData;
 using Models.Settings;
+using Scraping.Errors;
 
 namespace Scraping.Spider.NO;
 
@@ -163,7 +164,8 @@ public class DriverBotNo(
     private async Task<List<string>> _resolveYearOptions(IPage page)
     {
         var result = new List<string>();
-        await page.Locator(StartsButtonXpath).ClickAsync();
+        await ClickStartPanelButton(page);
+        // await page.Locator(StartsButtonXpath).ClickAsync();
         await page.WaitForSelectorAsync(YearSelectXpath);
         var optionElements  = await page.Locator(YearSelectXpath).Locator("option").AllAsync();
         
@@ -189,6 +191,21 @@ public class DriverBotNo(
         return urlSplit[length - 1].Trim();
     }
 
+    private async Task ClickStartPanelButton(IPage page)
+    {
+        try
+        {
+            await page.Locator(StartsButtonXpath).ClickAsync();
+        }
+        catch (TimeoutException ex)
+        {
+            throw new NoPanelButtonException("Panel button not found!", ex);
+        }
+    }
+    
+    /// <summary>
+    ///  Resolve year of birth, return 1900 if no year can be provided
+    /// </summary>
     private async Task<string> ResolveYearOfBirth(IPage page)
     {
         try

@@ -4,6 +4,7 @@ using Models.DbModels;
 using Models.DbModels.Updates;
 using Models.ScrapeData;
 using Models.Settings;
+using Scraping.Errors;
 using Scraping.Processors;
 using Scraping.Spider.NO;
 using ShellProgressBar;
@@ -16,8 +17,8 @@ public class DriverAndHorseStep(
     IDataServiceCollection dataServices,
     IBufferDataService bufferService)
 {
-    private const int DriverBatchSize = 2;
-    private const int HorseBatchSize = 6;
+    private const int DriverBatchSize = 4;
+    private const int HorseBatchSize = 12;
     
     private readonly HashSet<string> _driversToCollect = [];
     private readonly HashSet<string> _horsesToCollect = [];
@@ -123,8 +124,22 @@ public class DriverAndHorseStep(
         await semaphore.WaitAsync();
         try
         {
-            await CollectDriverData(sourceId);
-            bar.Tick();
+            bool complete = false;
+            int treshhold = 0;
+
+            while (!complete)
+            {
+                try
+                {
+                    await CollectDriverData(sourceId);
+                    complete = true;
+                    bar.Tick();
+                }
+                catch (NoPanelButtonException ex)
+                {
+                    if (++treshhold > 5) throw new Exception("Unable to collect driver data", ex);
+                }
+            }
         }
         finally
         {
