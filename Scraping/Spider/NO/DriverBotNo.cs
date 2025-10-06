@@ -57,7 +57,8 @@ public class DriverBotNo(
         var yearOptions = await _resolveYearOptions(page);
         foreach (var year in yearOptions)
         {
-            await page.WaitForSelectorAsync(YearSelectXpath);
+            // await page.WaitForSelectorAsync(YearSelectXpath);
+            await AwaitYearSelectBox(page);
             await page.Locator(YearSelectXpath).SelectOptionAsync(year);
             await page.WaitForSelectorAsync(RowSelectXpath);
             await page.Locator(RowSelectXpath).SelectOptionAsync("Alle");
@@ -166,7 +167,8 @@ public class DriverBotNo(
         var result = new List<string>();
         await ClickStartPanelButton(page);
         // await page.Locator(StartsButtonXpath).ClickAsync();
-        await page.WaitForSelectorAsync(YearSelectXpath);
+        //await page.WaitForSelectorAsync(YearSelectXpath);
+        await AwaitYearSelectBox(page);
         var optionElements  = await page.Locator(YearSelectXpath).Locator("option").AllAsync();
         
         foreach (var elem in optionElements)
@@ -202,6 +204,19 @@ public class DriverBotNo(
             throw new NoPanelButtonException("Panel button not found!", ex);
         }
     }
+
+    private async Task AwaitYearSelectBox(IPage page)
+    {
+        try
+        {
+            await page.WaitForSelectorAsync(YearSelectXpath, new PageWaitForSelectorOptions() { Timeout = 5000 });
+        }
+        catch (TimeoutException ex)
+        {
+            throw new YearSelectNotFoundException("Could not find year select box", ex);
+        }
+    }
+    
     
     /// <summary>
     ///  Resolve year of birth, return 1900 if no year can be provided

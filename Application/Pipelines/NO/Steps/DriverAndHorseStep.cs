@@ -19,7 +19,8 @@ public class DriverAndHorseStep(
     IBufferDataService bufferService)
 {
     private const int DriverBatchSize = 4;
-    private const int HorseBatchSize = 12;
+    private const int HorseBatchSize = 16;
+    private const int DbActionBatchSize = 200;
     
     private readonly HashSet<string> _driversToCollect = [];
     private readonly HashSet<string> _horsesToCollect = [];
@@ -125,17 +126,16 @@ public class DriverAndHorseStep(
         await semaphore.WaitAsync();
         try
         {
-            var complete = false;
             var tries = 0;
-            var treshhold = 5;
+            var treshhold = 3;
 
-            while (!complete)
+            while (tries < treshhold)
             {
                 try
                 {
                     await CollectDriverData(sourceId);
-                    complete = true;
                     bar.Tick();
+                    break;
                 }
                 catch (NoPanelButtonException)
                 {
@@ -143,10 +143,16 @@ public class DriverAndHorseStep(
                     {
                         await FileLogger.AddToDriverNoPanel(sourceId);
                         await bufferService.RemoveDriverAsync(sourceId);
-                        complete = true;
                         bar.Tick();
+                        break;
                     }
-                    Thread.Sleep(2000);
+                }
+                catch (YearSelectNotFoundException ex)
+                {
+                    await FileLogger.AddToDriverNoYearSelect(sourceId);
+                    await bufferService.RemoveDriverAsync(sourceId);
+                    bar.Tick();
+                    break;
                 }
             }
         }
@@ -167,7 +173,7 @@ public class DriverAndHorseStep(
         var processor = new ProcessDriverScrapeData();
         var newDriver = processor.Process(bot.DriverDataCollected);
         
-        // resolve licence for drived
+        // resolve licence for driver
         var driverLicenceExists = dataServices.DriverLicenseDataService
             .CheckExists(processor.NewDriverLicense.Code);
         if (driverLicenceExists)
@@ -296,6 +302,8 @@ public class DriverAndHorseStep(
                     });
                     _dataReport.StartnumberUpdatedDriver++;
                     break;
+                case CreateUpdateOptions.Ignore:
+                    break;
             }
             bar.Tick();
         }
@@ -329,6 +337,8 @@ public class DriverAndHorseStep(
                         HorseId = data.StartNumberData.HorseId
                     });
                     _dataReport.StartnumberUpdatedHorses++;
+                    break;
+                case CreateUpdateOptions.Ignore:
                     break;
             }
             bar.Tick();
@@ -452,9 +462,19 @@ public class DriverAndHorseStep(
         }
         
         if (driverId != "")
-            raceStartNumber.DriverId = driverId;
+            if (raceStartNumber.Id == driverId)
+                return new CreateUpdateResult
+                {
+                    Option = CreateUpdateOptions.Ignore
+                };
+            else raceStartNumber.DriverId = driverId;
         if (horseId != "")
-            raceStartNumber.HorseId = horseId;
+            if (raceStartNumber.Id == horseId)
+                return new CreateUpdateResult
+                {
+                    Option = CreateUpdateOptions.Ignore
+                };
+            else raceStartNumber.HorseId = horseId;
         
         return new CreateUpdateResult
         {
@@ -472,43 +492,48 @@ public class DriverAndHorseStep(
     private async Task StoreRaceData()
     {
 
-        var compChunks = _raceDataContainer.Competitions.Values.Chunk(500).ToList();
-        var raceChunks = _raceDataContainer.Races.Values.Chunk(500).ToList();
-        var rsnCreateChunks = _raceDataContainer.StartNumbersCreate.Chunk(500).ToList();
-        var rsnDriverChunks = _raceDataContainer.StartNumbersUpdateDriver.Chunk(500).ToList();
-        var rsnHorseChunks = _raceDataContainer.StartNumbersUpdateHorse.Chunk(500).ToList();
-        var resultChunks = _raceDataContainer.RaceResultsCreate.Chunk(500).ToList();
+        var compChunks = _raceDataContainer.Competitions.Values.Chunk(DbActionBatchSize).ToList();
+        var raceChunks = _raceDataContainer.Races.Values.Chunk(DbActionBatchSize).ToList();
+        var rsnCreateChunks = _raceDataContainer.StartNumbersCreate.Chunk(DbActionBatchSize).ToList();
+        var rsnDriverChunks = _raceDataContainer.StartNumbersUpdateDriver.Chunk(DbActionBatchSize).ToList();
+        var rsnHorseChunks = _raceDataContainer.StartNumbersUpdateHorse.Chunk(DbActionBatchSize).ToList();
+        var resultChunks = _raceDataContainer.RaceResultsCreate.Chunk(DbActionBatchSize).ToList();
         
         var count = compChunks.Count + raceChunks.Count + rsnCreateChunks.Count +
                     rsnDriverChunks.Count + rsnHorseChunks.Count + resultChunks.Count;
         var message = "Storing data to database";
         var options = CreateProgressBarOptions();
         using var bar = new ProgressBar(count,message,options);
-
+        
+        bar.Message = "Inserting new Competitions";
         foreach (var c in compChunks)
         {
             await dataServices.CompetitionDataService.AddBulkAsync(c.ToList());
             bar.Tick();
         }
 
+        bar.Message = "Inserting new races";
         foreach (var r in raceChunks)
         {
             await dataServices.RaceDataService.AddBulkAsync(r.ToList());
             bar.Tick();
         }
 
+        bar.Message = "Inserting new start numbers";
         foreach (var rsnCreate in rsnCreateChunks)
         {
             await dataServices.RaceStartNumberDataService.BulkAddAsync(rsnCreate.ToList());
             bar.Tick();
         }
 
+        bar.Message = "Updating drivers in start numbers";
         foreach (var rsnDriver in rsnDriverChunks)
         {
             await dataServices.RaceStartNumberDataService.BulkUpdateDriversAsync(rsnDriver.ToList());
             bar.Tick();
         }
-
+        
+        bar.Message = "Updating horses in start numbers";
         foreach (var rsnHorse in rsnHorseChunks)
         {
             await dataServices.RaceStartNumberDataService.BulkUpdateHorsesAsync(rsnHorse.ToList());
