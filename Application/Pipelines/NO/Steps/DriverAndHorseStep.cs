@@ -42,8 +42,10 @@ public class DriverAndHorseStep(
         // clear driver and horse buffer here
         while (_driversToCollect.Count > 0 || _horsesToCollect.Count > 0)
         {
+            var now = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
             AppLogger.AppLogger.LogSubheader($"Resolving drivers : ({_driversToCollect.Count} / {bufferService.DriverBuffer.Count}) " +
-                                             $"| horses: ({_horsesToCollect.Count} / {bufferService.HorseBuffer.Count})");
+                                             $"| horses: ({_horsesToCollect.Count} / {bufferService.HorseBuffer.Count}) " +
+                                             $"| {now}");
             
             // process data buffers
             await ProcessDriverBuffer();
