@@ -129,9 +129,9 @@ public class DriverAndHorseStep(
         try
         {
             var tries = 0;
-            var treshhold = 3;
+            var treshhold = 2;
 
-            while (tries < treshhold)
+            while (true)
             {
                 try
                 {
@@ -149,12 +149,15 @@ public class DriverAndHorseStep(
                         break;
                     }
                 }
-                catch (YearSelectNotFoundException ex)
+                catch (YearSelectNotFoundException)
                 {
-                    await FileLogger.AddToDriverNoYearSelect(sourceId);
-                    await bufferService.RemoveDriverAsync(sourceId);
-                    bar.Tick();
-                    break;
+                    if (++tries > treshhold)
+                    {
+                        await FileLogger.AddToDriverNoYearSelect(sourceId);
+                        await bufferService.RemoveDriverAsync(sourceId);
+                        bar.Tick();
+                        break;
+                    }
                 }
             }
         }
@@ -228,16 +231,15 @@ public class DriverAndHorseStep(
         await semaphore.WaitAsync();
         try
         {
-            var complete = false;
             var tries = 0;
-            var treshhold = 5;
-            while (!complete)
+            var treshhold = 2;
+            while (true)
             {
                 try
                 {
                     await CollectHorseData(sourceId);
-                    complete = true;
                     bar.Tick();
+                    break;
                 }
                 catch (NoPanelButtonException)
                 {
@@ -245,8 +247,8 @@ public class DriverAndHorseStep(
                     {
                         await FileLogger.AddToHorseNoPanel(sourceId);
                         await bufferService.RemoveHorseAsync(sourceId);
-                        complete = true;
                         bar.Tick();
+                        break;
                     }
                 }
             }

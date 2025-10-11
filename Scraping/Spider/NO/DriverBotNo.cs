@@ -197,7 +197,7 @@ public class DriverBotNo(
     {
         try
         {
-            await page.Locator(StartsButtonXpath).ClickAsync(new LocatorClickOptions {Timeout = 5000});
+            await page.Locator(StartsButtonXpath).ClickAsync(new LocatorClickOptions {Timeout = 4000});
         }
         catch (TimeoutException ex)
         {
@@ -209,7 +209,7 @@ public class DriverBotNo(
     {
         try
         {
-            await page.WaitForSelectorAsync(YearSelectXpath, new PageWaitForSelectorOptions() { Timeout = 5000 });
+            await page.WaitForSelectorAsync(YearSelectXpath, new PageWaitForSelectorOptions() { Timeout = 4000 });
         }
         catch (TimeoutException ex)
         {
@@ -225,7 +225,7 @@ public class DriverBotNo(
     {
         try
         {
-            var result = await page.Locator(YearOfBirthXpath).TextContentAsync();
+            var result = await page.Locator(YearOfBirthXpath).TextContentAsync( new LocatorTextContentOptions() {Timeout = 4000});
             return result;
         }
         catch (TimeoutException)

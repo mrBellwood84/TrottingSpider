@@ -191,14 +191,13 @@ public class HorseBotNo(
     {
         try
         {
-            await page.Locator(StartsButtonXpath).ClickAsync(new LocatorClickOptions {Timeout = 5000});
+            await page.Locator(StartsButtonXpath).ClickAsync(new LocatorClickOptions {Timeout = 4000});
         }
         catch (TimeoutException ex)
         {
             throw new NoPanelButtonException("Panel button not found!", ex);
         }
     }
-    
     
     /// <summary>
     /// Get last part of url string
