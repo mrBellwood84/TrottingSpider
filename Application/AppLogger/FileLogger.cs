@@ -6,6 +6,7 @@ public static class FileLogger
     private static readonly string DriverNoPanelLog = Path.Combine(RootPath, "DriverNoPanelError.txt");
     private static readonly string DriverNoYearSelectLog = Path.Combine(RootPath, "DriverNoYearSelectError.txt");
     private static readonly string HorseNoPanelLog = Path.Combine(RootPath, "HorseNoPanelError.txt");
+    private static readonly string NoContentErrorLog = Path.Combine(RootPath, "NoContentError.txt");
 
     public static async Task AddToDriverNoPanel(string sourceId)
     {
@@ -23,5 +24,11 @@ public static class FileLogger
     {
         Directory.CreateDirectory(RootPath);
         await File.AppendAllTextAsync(HorseNoPanelLog, $"{sourceId} :: Horse no panel error\n");
+    }
+
+    public static async Task AddToNoContentError(string url)
+    {
+        Directory.CreateDirectory(RootPath);
+        await File.AppendAllTextAsync(NoContentErrorLog, $"{url} :: NoContent error\n");
     }
 }

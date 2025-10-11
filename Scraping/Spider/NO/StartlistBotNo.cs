@@ -1,6 +1,7 @@
 ﻿using Microsoft.Playwright;
 using Models.ScrapeData;
 using Models.Settings;
+using Scraping.Errors;
 
 namespace Scraping.Spider.NO;
 
@@ -15,7 +16,7 @@ public class StartlistBotNo(BrowserOptions options, string url) : BaseRobot(opti
     private const string RaceNavXpath = "//div[@class=\"race-navigation\"]";
     private const string RacePanelXpath = "//div[@class=\"js-tabbedContent-panel\"]";
     
-    // xpaths inside Racepanel
+    // xpaths inside Race panel
     private const string RacePanelStrongXpath = "//p/strong";
     private const string RaceTableRowsXpath = "//div[2]/table/tbody/tr[not(@class=\"expandable-row\")]";
     
@@ -34,8 +35,9 @@ public class StartlistBotNo(BrowserOptions options, string url) : BaseRobot(opti
         await page.GotoAsync(Url);
         
         // parse Competition data here
-        var raceCourseElemText = await page.Locator(RaceCourseNameXpath).TextContentAsync();
-        var raceCourseName = _parseRaceCourseName(raceCourseElemText!);
+        // var raceCourseElemText = await page.Locator(RaceCourseNameXpath).TextContentAsync();
+        //var raceCourseName = _parseRaceCourseName(raceCourseElemText!);
+        var raceCourseName = await ResolveRaceCourseName(page);
         var raceDate = _extractUrlEnd(Url);
         
         // extract race numbers from element
@@ -78,8 +80,8 @@ public class StartlistBotNo(BrowserOptions options, string url) : BaseRobot(opti
                     Date = raceDate,
                     RaceNumber = raceNumber,
                     StartNumber = startNumber!.Trim(),
-                    HorseSourceId = _extractUrlEnd(horseLink!),
-                    DriverSourceId = _extractUrlEnd(driverLink!),
+                    HorseSourceId = _extractUrlEnd(horseLink),
+                    DriverSourceId = _extractUrlEnd(driverLink),
                     ForeShoe = foreShoe!,
                     HindShoe = hindShoe!,
                     TrackNumber = trackNumber!.Trim(),
@@ -91,6 +93,20 @@ public class StartlistBotNo(BrowserOptions options, string url) : BaseRobot(opti
                 };
                 CollectedData.Add(item);
             }
+        }
+    }
+
+    private async Task<string> ResolveRaceCourseName(IPage page)
+    {
+        try
+        {
+            var raceCourseElemTexT = await page.Locator(RaceCourseNameXpath)
+                .TextContentAsync(new LocatorTextContentOptions() { Timeout = 4000 });
+            return _parseRaceCourseName(raceCourseElemTexT!);
+        }
+        catch (Exception ex)
+        {
+            throw new NoContentException("No Race startlist was found in page!", ex);
         }
     }
 
@@ -109,9 +125,9 @@ public class StartlistBotNo(BrowserOptions options, string url) : BaseRobot(opti
     /// <summary>
     /// Parse date from url string
     /// </summary>
-    private string _extractUrlEnd(string url)
+    private string _extractUrlEnd(string link)
     {
-        var urlSplit = url.Split('/');
+        var urlSplit = link.Split('/');
         var length = urlSplit.Length;
         return urlSplit[length - 1].Trim();
     }

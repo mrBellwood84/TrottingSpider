@@ -39,10 +39,12 @@ public class Pipeline(
             var startlistResultStep = new StartlistResultsCollectionStep(browserOptions, calendarLinks, bufferDataService);
             await startlistResultStep.RunAsync();
             
+            // Collect data about horses and drivers found in collected data
             var driverAndHorsesStep = new DriverAndHorseStep(browserOptions, scraperSettings,
                 dataServices, bufferDataService);
             await driverAndHorsesStep.RunAsync();
             
+            // parse collected startlist and results data
             var updateStep = new UpdateStartlistAndResultsStep(
                 dataServices, 
                 startlistResultStep.StartlistDataCollected, 
