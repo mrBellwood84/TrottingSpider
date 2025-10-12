@@ -1,9 +1,10 @@
-﻿using Models.DbModels;
+﻿using Application.DataServices.Services;
+using Models.DbModels;
 
 namespace Application.DataServices;
 
 public class DataServiceRegistry(
-    IBaseDataService<Competition> competitionDataService,
+    ICompetitionDataService competitionDataService,
     IDriverDataService driverDataService,
     IBaseDataService<DriverLicense> driverLicenseDataService,
     IHorseDataService horseDataService,
@@ -12,7 +13,7 @@ public class DataServiceRegistry(
     IRaceResultDataService raceResultDataService,
     IRaceStartNumberDataService raceStartNumberDataService) : IDataServiceRegistry
 {
-    public IBaseDataService<Competition> CompetitionDataService { get; } = competitionDataService;
+    public ICompetitionDataService CompetitionDataService { get; } = competitionDataService;
     public IDriverDataService DriverDataService { get; } = driverDataService;
     public IBaseDataService<DriverLicense> DriverLicenseDataService { get; } = driverLicenseDataService;
     public IHorseDataService HorseDataService { get; } = horseDataService;

@@ -70,9 +70,9 @@ public class StartlistResultsCollectionStep(
         var startlistBot = new StartlistBotNo(browserOptions, links.StartlistLink);
         var resultBot = new ResultsBotNo(browserOptions, links.ResultsLink);
         
-        if(!links.StartlistFromSource) 
+        if(!links.StartlistFromSource && (links.StartlistLink != "")) 
             tasks.Add(startlistBot.RunBrowser(startlistBot.Execute));
-        if (!links.ResultsFromSource)
+        if (!links.ResultsFromSource && (links.ResultsLink != ""))
             tasks.Add(resultBot.RunBrowser(resultBot.Execute));
         
         await Task.WhenAll(tasks);

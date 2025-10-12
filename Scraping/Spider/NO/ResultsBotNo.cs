@@ -1,6 +1,7 @@
 ﻿using Microsoft.Playwright;
 using Models.ScrapeData;
 using Models.Settings;
+using Scraping.Errors;
 
 namespace Scraping.Spider.NO;
 
@@ -23,8 +24,9 @@ public class ResultsBotNo(BrowserOptions options, string url) : BaseRobot(option
         await page.GotoAsync(Url);
         
         // parse competition data
-        var raceCourseElemText = await page.Locator(RaceCourseNameXpath).TextContentAsync();
-        var raceCourse = _parseRaceCourseName(raceCourseElemText!);
+        // var raceCourseElemText = await page.Locator(RaceCourseNameXpath).TextContentAsync()
+        // var raceCourse = _parseRaceCourseName(raceCourseElemText!);
+        var raceCourse = await ResolveRaceCourseName(page);
         var raceDate = _extractUrlEnd(Url);
 
         var dataPanel = await page.Locator(RacePanelXpath).AllAsync();
@@ -74,6 +76,20 @@ public class ResultsBotNo(BrowserOptions options, string url) : BaseRobot(option
 
                 DataCollected.Add(item);
             }
+        }
+    }
+    
+    private async Task<string> ResolveRaceCourseName(IPage page)
+    {
+        try
+        {
+            var raceCourseElemTexT = await page.Locator(RaceCourseNameXpath)
+                .TextContentAsync(new LocatorTextContentOptions() { Timeout = 4000 });
+            return _parseRaceCourseName(raceCourseElemTexT!);
+        }
+        catch (Exception ex)
+        {
+            throw new NoContentException("No Race startlist was found in page!", ex);
         }
     }
     

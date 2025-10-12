@@ -22,6 +22,7 @@ public static class DbServiceCollectionExtension
         services.AddScoped<IBaseDbService<RaceStartNumber>, RaceStartNumberDbService>();
         
         // add scoped db service extensions
+        services.AddScoped<ICompetitionDbServiceExtension, CompetitionDbServiceExtension>();
         services.AddScoped<IDriverDbServiceExtension, DriverDbServiceExtension>();
         services.AddScoped<IHorseDbServiceExtension, HorseDbServiceExtension>();
         services.AddScoped<IRaceResultsDbServiceExtension, RaceResultsDbServiceExtension>();

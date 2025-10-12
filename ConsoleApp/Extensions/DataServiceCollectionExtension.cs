@@ -11,7 +11,7 @@ public static class DataServiceCollectionExtension
     {
         // add individual services
         services.AddScoped<IBufferDataService, BufferDataService>();
-        services.AddScoped<IBaseDataService<Competition>, CompetitionDataService>();
+        services.AddScoped<ICompetitionDataService, CompetitionDataService>();
         services.AddScoped<IDriverDataService, DriverDataService>();
         services.AddScoped<IBaseDataService<DriverLicense>, DriverLicenseDataService>();
         services.AddScoped<IHorseDataService, HorseDataService>();

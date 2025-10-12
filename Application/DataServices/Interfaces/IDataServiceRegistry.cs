@@ -1,10 +1,11 @@
-﻿using Models.DbModels;
+﻿using Application.DataServices.Services;
+using Models.DbModels;
 
 namespace Application.DataServices;
 
 public interface IDataServiceRegistry
 {
-    IBaseDataService<Competition> CompetitionDataService { get; }
+    ICompetitionDataService CompetitionDataService { get; }
     IDriverDataService DriverDataService { get; }
     IBaseDataService<DriverLicense> DriverLicenseDataService { get; }
     IHorseDataService HorseDataService { get; }
